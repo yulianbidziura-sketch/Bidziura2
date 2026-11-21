@@ -13,6 +13,9 @@ import java.util.List;
  * Заняття 1/1: дані тримаються в пам'яті, поля підібрані так, щоб їх вистачило
  * і на картку в переліку (модель, бренд, ціна, фото), і на сторінку велосипеда
  * (рама, колеса, швидкості, вага, опис, галерея).
+ *
+ * Заняття 1/2: додано поле {@code type} — за ним працює фільтр у переліку
+ * (GET /api/bikes?type=...).
  */
 public class Bike {
 
@@ -23,6 +26,9 @@ public class Bike {
 
     /** Виробник, напр. «Pride». */
     private String brand;
+
+    /** Тип велосипеда: гірський, шосейний, міський, гравійний, підлітковий. Поле фільтра. */
+    private String type;
 
     private BigDecimal price;
 
@@ -58,13 +64,14 @@ public class Bike {
     public Bike() {
     }
 
-    public Bike(Long id, String model, String brand, BigDecimal price, String frameMaterial,
-                String frameSize, BigDecimal wheelSize, Integer gears, BigDecimal weightKg,
-                Integer year, String imageUrl, List<String> images, String description,
-                Integer inStock) {
+    public Bike(Long id, String model, String brand, String type, BigDecimal price,
+                String frameMaterial, String frameSize, BigDecimal wheelSize, Integer gears,
+                BigDecimal weightKg, Integer year, String imageUrl, List<String> images,
+                String description, Integer inStock) {
         this.id = id;
         this.model = model;
         this.brand = brand;
+        this.type = type;
         this.price = price;
         this.frameMaterial = frameMaterial;
         this.frameSize = frameSize;
@@ -100,6 +107,14 @@ public class Bike {
 
     public void setBrand(String brand) {
         this.brand = brand;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public BigDecimal getPrice() {

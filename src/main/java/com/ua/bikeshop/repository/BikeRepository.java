@@ -17,9 +17,15 @@ public interface BikeRepository {
     /** Усі велосипеди зі сховища. */
     List<Bike> findAll();
 
+    /** Велосипеди лише одного типу (фільтр у переліку). */
+    List<Bike> findByType(String type);
+
     /** Велосипед за id або {@link Optional#empty()}, якщо такого немає. */
     Optional<Bike> findById(Long id);
 
     /** Зберігає велосипед: без id — створює новий, з id — перезаписує. */
     Bike save(Bike bike);
+
+    /** Видаляє велосипед; повертає false, якщо такого id не було. */
+    boolean deleteById(Long id);
 }

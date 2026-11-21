@@ -31,6 +31,13 @@ public class InMemoryBikeRepository implements BikeRepository {
     }
 
     @Override
+    public List<Bike> findByType(String type) {
+        return storage.values().stream()
+                .filter(bike -> type.equalsIgnoreCase(bike.getType()))
+                .toList();
+    }
+
+    @Override
     public Optional<Bike> findById(Long id) {
         return Optional.ofNullable(storage.get(id));
     }
@@ -42,5 +49,10 @@ public class InMemoryBikeRepository implements BikeRepository {
         }
         storage.put(bike.getId(), bike);
         return bike;
+    }
+
+    @Override
+    public boolean deleteById(Long id) {
+        return storage.remove(id) != null;
     }
 }
