@@ -1,0 +1,77 @@
+### VeloUA — усі ендпоінти (HTTP Client IntelliJ IDEA)
+# Запустити застосунок (конфігурація «VeloUA — запуск»), далі тиснути ▶ біля кожного запиту.
+
+### 1. Перелік велосипедів
+GET http://localhost:8080/api/bikes
+Accept: application/json
+
+### 2. Перелік із фільтром за типом
+GET http://localhost:8080/api/bikes?type=Гірський
+Accept: application/json
+
+### 3. Один велосипед з деталями
+GET http://localhost:8080/api/bikes/1
+Accept: application/json
+
+### 4. Неіснуючий велосипед → 404
+GET http://localhost:8080/api/bikes/999
+Accept: application/json
+
+### 5. Створити велосипед → 201 Created
+POST http://localhost:8080/api/bikes
+Content-Type: application/json
+
+{
+  "model": "Enduro 29",
+  "brand": "Ridex",
+  "type": "Гірський",
+  "price": 52000.00,
+  "frameMaterial": "Алюміній",
+  "frameSize": "M",
+  "wheelSize": 29.0,
+  "gears": 12,
+  "weightKg": 14.10,
+  "year": 2025,
+  "imageUrl": "/images/bike-trail.svg",
+  "images": ["/images/bike-trail.svg"],
+  "description": "Ендуро-версія на довгоходій вилці 160 мм.",
+  "inStock": 2
+}
+
+### 6. Оновити велосипед → 200 OK
+PUT http://localhost:8080/api/bikes/1
+Content-Type: application/json
+
+{
+  "model": "Trail 29 Pro 2025",
+  "brand": "Ridex",
+  "type": "Гірський",
+  "price": 44500.00,
+  "frameMaterial": "Алюміній",
+  "frameSize": "L",
+  "wheelSize": 29.0,
+  "gears": 12,
+  "weightKg": 13.20,
+  "year": 2025,
+  "imageUrl": "/images/bike-trail.svg",
+  "images": ["/images/bike-trail.svg", "/images/bike-trail-2.svg"],
+  "description": "Оновлена модель із трансмісією 1×12 і новою вилкою.",
+  "inStock": 5
+}
+
+### 7. Оновити неіснуючий → 404
+PUT http://localhost:8080/api/bikes/999
+Content-Type: application/json
+
+{
+  "model": "Немає такого",
+  "brand": "Ridex",
+  "type": "Гірський",
+  "price": 1000.00
+}
+
+### 8. Видалити велосипед → 204 No Content
+DELETE http://localhost:8080/api/bikes/2
+
+### 9. Видалити його ж удруге → 404
+DELETE http://localhost:8080/api/bikes/2
