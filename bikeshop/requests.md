@@ -26,12 +26,25 @@ curl http://localhost:8080/api/bikes
 ## 2. Перелік із фільтром за типом
 
 ```bash
-curl "http://localhost:8080/api/bikes?type=Гірський"
+curl -G --data-urlencode "type=Гірський" http://localhost:8080/api/bikes
+```
+
+Те саме з уже закодованим значенням (якщо зручніше одним рядком):
+
+```bash
+curl "http://localhost:8080/api/bikes?type=%D0%93%D1%96%D1%80%D1%81%D1%8C%D0%BA%D0%B8%D0%B9"
 ```
 
 Поверне лише велосипеди цього типу. Доступні типи у стартових даних:
 `Гірський`, `Шосейний`, `Міський`, `Гравійний`, `Підлітковий`.
 Фільтр нечутливий до регістру, порожнє значення означає «усі».
+
+> ⚠️ Кирилицю в рядку запиту треба **кодувати у percent-encoding**: за RFC 7230/3986
+> у request target дозволені лише ASCII-символи, і якщо вставити кирилицю як є
+> (`curl "...?type=Гірський"`), Tomcat відхилить запит зі статусом **400** ще до
+> контролера: *Invalid character found in the request target*. Ключ `-G
+> --data-urlencode` змушує curl закодувати значення самостійно; браузер,
+> HTTP-клієнт IntelliJ і fetch у JavaScript роблять це автоматично.
 
 ---
 
@@ -163,7 +176,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/images/bike-trail
 | Операція | Запит | Код |
 |---|---|---|
 | перелік | `GET /api/bikes` | 200 |
-| фільтр за типом | `GET /api/bikes?type=Гірський` | 200 |
+| фільтр за типом | `GET /api/bikes?type=<закодоване значення>` | 200 |
 | один велосипед | `GET /api/bikes/{id}` | 200 / 404 |
 | створення | `POST /api/bikes` | 201 |
 | оновлення | `PUT /api/bikes/{id}` | 200 / 404 |

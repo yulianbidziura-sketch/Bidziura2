@@ -6,7 +6,12 @@ GET http://localhost:8080/api/bikes
 Accept: application/json
 
 ### 2. Перелік із фільтром за типом
+# HTTP-клієнт IntelliJ сам кодує кирилицю в рядку запиту.
 GET http://localhost:8080/api/bikes?type=Гірський
+Accept: application/json
+
+### 2a. Той самий фільтр, значення вже закодоване (запасний варіант)
+GET http://localhost:8080/api/bikes?type=%D0%93%D1%96%D1%80%D1%81%D1%8C%D0%BA%D0%B8%D0%B9
 Accept: application/json
 
 ### 3. Один велосипед з деталями
