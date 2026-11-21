@@ -16,6 +16,7 @@ public record BikeDetailDto(
         Long id,
         String model,
         String brand,
+        String type,
         BigDecimal price,
         String frameMaterial,
         String frameSize,

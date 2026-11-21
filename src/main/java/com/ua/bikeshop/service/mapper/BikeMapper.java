@@ -3,7 +3,10 @@ package com.ua.bikeshop.service.mapper;
 import com.ua.bikeshop.domain.Bike;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
+import com.ua.bikeshop.web.dto.BikeRequest;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Перетворення доменного {@link Bike} у DTO.
@@ -21,6 +24,7 @@ public class BikeMapper {
                 bike.getId(),
                 bike.getModel(),
                 bike.getBrand(),
+                bike.getType(),
                 bike.getPrice(),
                 bike.getImageUrl()
         );
@@ -32,6 +36,7 @@ public class BikeMapper {
                 bike.getId(),
                 bike.getModel(),
                 bike.getBrand(),
+                bike.getType(),
                 bike.getPrice(),
                 bike.getFrameMaterial(),
                 bike.getFrameSize(),
@@ -44,5 +49,30 @@ public class BikeMapper {
                 bike.getDescription(),
                 bike.getInStock()
         );
+    }
+
+    /**
+     * Вхідний DTO → доменний об'єкт (для створення й оновлення).
+     *
+     * id тут навмисно не встановлюється: при створенні його призначить
+     * репозиторій, при оновленні — сервіс візьме його зі шляху запиту.
+     */
+    public Bike toDomain(BikeRequest request) {
+        Bike bike = new Bike();
+        bike.setModel(request.model());
+        bike.setBrand(request.brand());
+        bike.setType(request.type());
+        bike.setPrice(request.price());
+        bike.setFrameMaterial(request.frameMaterial());
+        bike.setFrameSize(request.frameSize());
+        bike.setWheelSize(request.wheelSize());
+        bike.setGears(request.gears());
+        bike.setWeightKg(request.weightKg());
+        bike.setYear(request.year());
+        bike.setImageUrl(request.imageUrl());
+        bike.setImages(request.images() == null ? List.of() : request.images());
+        bike.setDescription(request.description());
+        bike.setInStock(request.inStock());
+        return bike;
     }
 }
