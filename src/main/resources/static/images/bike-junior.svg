@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <circle cx="120" cy="255" r="58" fill="none" stroke="#334155" stroke-width="7"/>
+  <circle cx="120" cy="255" r="49" fill="none" stroke="#22d3ee" stroke-width="3"/>
+  <circle cx="120" cy="255" r="6" fill="#334155"/>
+  <line x1="120" y1="255" x2="171" y2="264" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="69" y2="246" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="160" y2="288" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="80" y2="222" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="138" y2="304" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="102" y2="206" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="111" y2="306" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="129" y2="204" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="87" y2="295" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="153" y2="215" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="71" y2="273" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="169" y2="237" stroke="#cbd5e1" stroke-width="2"/>
+  <circle cx="285" cy="255" r="58" fill="none" stroke="#334155" stroke-width="7"/>
+  <circle cx="285" cy="255" r="49" fill="none" stroke="#22d3ee" stroke-width="3"/>
+  <circle cx="285" cy="255" r="6" fill="#334155"/>
+  <line x1="285" y1="255" x2="336" y2="264" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="234" y2="246" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="325" y2="288" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="245" y2="222" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="303" y2="304" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="267" y2="206" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="276" y2="306" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="294" y2="204" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="252" y2="295" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="318" y2="215" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="236" y2="273" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="334" y2="237" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="176" y1="162" x2="256" y2="168" stroke="#6d28d9" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="196" y1="255" x2="256" y2="168" stroke="#6d28d9" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="176" y1="162" x2="196" y2="255" stroke="#6d28d9" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="120" y1="255" x2="196" y2="255" stroke="#6d28d9" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="120" y1="255" x2="176" y2="162" stroke="#6d28d9" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="256" y1="168" x2="285" y2="255" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+  <line x1="232" y1="152" x2="276" y2="152" stroke="#475569" stroke-width="7" stroke-linecap="round"/>
+  <line x1="256" y1="168" x2="254" y2="152" stroke="#475569" stroke-width="7"/>
+  <path d="M 158 154 L 194 154" stroke="#1e293b" stroke-width="9" stroke-linecap="round"/>
+  <line x1="176" y1="162" x2="176" y2="150" stroke="#475569" stroke-width="7"/>
+  <circle cx="196" cy="255" r="20" fill="none" stroke="#22d3ee" stroke-width="4"/>
+  <line x1="196" y1="255" x2="212" y2="269" stroke="#334155" stroke-width="5"/>
+  <line x1="120" y1="241" x2="196" y2="239" stroke="#94a3b8" stroke-width="3"/>
+  <text x="200" y="356" font-family="sans-serif" font-size="22" fill="#64748b" text-anchor="middle">Kidrex Junior 24</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <rect width="400" height="400" fill="#f1f5f9"/>
+  <circle cx="120" cy="255" r="72" fill="none" stroke="#334155" stroke-width="7"/>
+  <circle cx="120" cy="255" r="63" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="120" cy="255" r="6" fill="#334155"/>
+  <line x1="120" y1="255" x2="185" y2="266" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="55" y2="244" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="171" y2="297" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="69" y2="213" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="143" y2="317" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="97" y2="193" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="109" y2="320" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="131" y2="190" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="78" y2="306" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="162" y2="204" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="58" y2="278" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="120" y1="255" x2="182" y2="232" stroke="#cbd5e1" stroke-width="2"/>
+  <circle cx="285" cy="255" r="72" fill="none" stroke="#334155" stroke-width="7"/>
+  <circle cx="285" cy="255" r="63" fill="none" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="285" cy="255" r="6" fill="#334155"/>
+  <line x1="285" y1="255" x2="350" y2="266" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="220" y2="244" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="336" y2="297" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="234" y2="213" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="308" y2="317" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="262" y2="193" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="274" y2="320" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="296" y2="190" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="243" y2="306" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="327" y2="204" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="223" y2="278" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="285" y1="255" x2="347" y2="232" stroke="#cbd5e1" stroke-width="2"/>
+  <line x1="176" y1="162" x2="256" y2="168" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="196" y1="255" x2="256" y2="168" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="176" y1="162" x2="196" y2="255" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="120" y1="255" x2="196" y2="255" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="120" y1="255" x2="176" y2="162" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <line x1="256" y1="168" x2="285" y2="255" stroke="#475569" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 240 158 L 266 158 Q 282 158 278 178" stroke="#475569" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M 158 154 L 194 154" stroke="#1e293b" stroke-width="9" stroke-linecap="round"/>
+  <line x1="176" y1="162" x2="176" y2="150" stroke="#475569" stroke-width="7"/>
+  <circle cx="196" cy="255" r="20" fill="none" stroke="#38bdf8" stroke-width="4"/>
+  <line x1="196" y1="255" x2="212" y2="269" stroke="#334155" stroke-width="5"/>
+  <line x1="120" y1="241" x2="196" y2="239" stroke="#94a3b8" stroke-width="3"/>
+  <text x="200" y="356" font-family="sans-serif" font-size="22" fill="#64748b" text-anchor="middle">Velora Road Carbon 2</text>
+</svg>
