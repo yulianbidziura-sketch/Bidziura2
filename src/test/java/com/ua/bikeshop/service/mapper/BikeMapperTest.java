@@ -3,6 +3,7 @@ package com.ua.bikeshop.service.mapper;
 import com.ua.bikeshop.domain.Bike;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
+import com.ua.bikeshop.web.dto.BikeRequest;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -25,6 +26,7 @@ class BikeMapperTest {
         assertThat(card.id()).isEqualTo(1L);
         assertThat(card.model()).isEqualTo("Trail 29 Pro");
         assertThat(card.brand()).isEqualTo("Ridex");
+        assertThat(card.type()).isEqualTo("Гірський");
         assertThat(card.price()).isEqualByComparingTo("41900.00");
         assertThat(card.imageUrl()).isEqualTo("/images/bike-trail.svg");
     }
@@ -39,10 +41,37 @@ class BikeMapperTest {
         assertThat(detail.year()).isEqualTo(2024);
         assertThat(detail.images()).hasSize(2);
         assertThat(detail.inStock()).isEqualTo(6);
+        assertThat(detail.type()).isEqualTo("Гірський");
+    }
+
+    @Test
+    void toDomain_buildsBikeWithoutId() {
+        BikeRequest request = new BikeRequest("Enduro 29", "Ridex", "Гірський",
+                new BigDecimal("52000.00"), "Алюміній", "M", new BigDecimal("29.0"), 12,
+                new BigDecimal("14.10"), 2025, "/images/bike-trail.svg",
+                List.of("/images/bike-trail.svg"), "Новий велосипед", 2);
+
+        Bike bike = mapper.toDomain(request);
+
+        assertThat(bike.getId()).isNull();          // id призначить сервер
+        assertThat(bike.getModel()).isEqualTo("Enduro 29");
+        assertThat(bike.getType()).isEqualTo("Гірський");
+        assertThat(bike.getPrice()).isEqualByComparingTo("52000.00");
+        assertThat(bike.getInStock()).isEqualTo(2);
+    }
+
+    @Test
+    void toDomain_treatsMissingImagesAsEmptyList() {
+        BikeRequest request = new BikeRequest("Enduro 29", "Ridex", "Гірський",
+                new BigDecimal("52000.00"), "Алюміній", "M", new BigDecimal("29.0"), 12,
+                new BigDecimal("14.10"), 2025, "/images/bike-trail.svg",
+                null, "Новий велосипед", 2);
+
+        assertThat(mapper.toDomain(request).getImages()).isEmpty();
     }
 
     private Bike sample() {
-        return new Bike(1L, "Trail 29 Pro", "Ridex", new BigDecimal("41900.00"), "Алюміній", "L",
+        return new Bike(1L, "Trail 29 Pro", "Ridex", "Гірський", new BigDecimal("41900.00"), "Алюміній", "L",
                 new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
                 "/images/bike-trail.svg",
                 List.of("/images/bike-trail.svg", "/images/bike-trail-2.svg"),
