@@ -26,7 +26,7 @@ import java.util.List;
  * Відповідає тільки за HTTP: прийняти запит і повернути DTO; жодної логіки.
  *
  * Заняття 1/2 — повний CRUD у пам'яті:
- *   GET    /api/bikes              → перелік карток (опц. ?type=...)
+ *   GET    /api/bikes              → перелік карток (опц. ?type=... і/або ?color=...)
  *   GET    /api/bikes/{id}         → один велосипед з деталями
  *   POST   /api/bikes              → створити велосипед   (201 Created)
  *   PUT    /api/bikes/{id}         → оновити велосипед    (200 OK / 404)
@@ -43,8 +43,9 @@ public class BikeController {
     }
 
     @GetMapping
-    public List<BikeCardDto> list(@RequestParam(required = false) String type) {
-        return bikeService.findAll(type);
+    public List<BikeCardDto> list(@RequestParam(required = false) String type,
+                                  @RequestParam(required = false) String color) {
+        return bikeService.findAll(type, color);
     }
 
     @GetMapping("/{id}")

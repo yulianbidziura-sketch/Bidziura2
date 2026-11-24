@@ -3,7 +3,7 @@ package com.ua.bikeshop.repository;
 import com.ua.bikeshop.domain.Bike;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +17,9 @@ import java.util.concurrent.atomic.AtomicLong;
  * наповнення стартовими даними винесено окремо — у {@code BikeSeeder}.
  *
  * Сховище — {@link ConcurrentHashMap} (кілька запитів Tomcat обслуговує
- * паралельно), ідентифікатори видає {@link AtomicLong}.
+ * паралельно), ідентифікатори видає {@link AtomicLong}. Перелік повертається
+ * упорядкованим за id: {@code ConcurrentHashMap} порядку не зберігає, а клієнт
+ * має бачити стабільну послідовність (ПЗ 1/3).
  */
 @Repository
 public class InMemoryBikeRepository implements BikeRepository {
@@ -27,13 +29,17 @@ public class InMemoryBikeRepository implements BikeRepository {
 
     @Override
     public List<Bike> findAll() {
-        return new ArrayList<>(storage.values());
+        return storage.values().stream()
+                .sorted(Comparator.comparing(Bike::getId))
+                .toList();
     }
 
     @Override
-    public List<Bike> findByType(String type) {
+    public List<Bike> search(String type, String color) {
         return storage.values().stream()
-                .filter(bike -> type.equalsIgnoreCase(bike.getType()))
+                .filter(bike -> type == null || type.equalsIgnoreCase(bike.getType()))
+                .filter(bike -> color == null || color.equalsIgnoreCase(bike.getColor()))
+                .sorted(Comparator.comparing(Bike::getId))
                 .toList();
     }
 

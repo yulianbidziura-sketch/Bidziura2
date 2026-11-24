@@ -1,9 +1,10 @@
-# Приклади запитів — VeloUA (заняття 1/2, повний CRUD)
+# Приклади запитів — VeloUA (CRUD, заняття 1/2 + ПЗ 1/3)
 
 Бек має бути запущений: `./mvnw spring-boot:run` (порт 8080, JDK 21).
 
-На 1/2 доступні всі шість операцій: перелік, фільтр за типом, один велосипед,
-створення, оновлення, видалення.
+Доступні всі операції CRUD: перелік, фільтри, один велосипед, створення,
+оновлення, видалення. **ПЗ 1/3** додало поле `color` і другий фільтр
+`?color=`, який працює і сам по собі, і разом із `?type=`.
 
 ---
 
@@ -48,6 +49,27 @@ curl "http://localhost:8080/api/bikes?type=%D0%93%D1%96%D1%80%D1%81%D1%8C%D0%BA%
 
 ---
 
+## 2a. Перелік із фільтром за кольором (ПЗ 1/3)
+
+```bash
+curl -G --data-urlencode "color=Чорний" http://localhost:8080/api/bikes
+```
+
+Кольори у стартових даних: `Чорний`, `Червоний`, `Бірюзовий`, `Пісочний`, `Синій`.
+
+## 2b. Обидва фільтри разом
+
+```bash
+curl -G --data-urlencode "type=Гірський" --data-urlencode "color=Чорний" \
+  http://localhost:8080/api/bikes
+```
+
+Критерії складаються: повернуться велосипеди, у яких збігається і тип, і колір.
+Якщо такого поєднання немає — порожній масив `[]` зі статусом 200 (це не помилка:
+ресурс-колекція існує, просто порожня).
+
+---
+
 ## 3. Один велосипед з деталями
 
 ```bash
@@ -70,7 +92,8 @@ curl http://localhost:8080/api/bikes/1
   "imageUrl": "/images/bike-trail.svg",
   "images": ["/images/bike-trail.svg", "/images/bike-trail-2.svg"],
   "description": "Гірський велосипед на алюмінієвій рамі ...",
-  "inStock": 6
+  "inStock": 6,
+  "color": "Чорний"
 }
 ```
 
@@ -95,7 +118,8 @@ curl -i -X POST http://localhost:8080/api/bikes \
     "imageUrl": "/images/bike-trail.svg",
     "images": ["/images/bike-trail.svg"],
     "description": "Ендуро-версія на довгоходій вилці 160 мм.",
-    "inStock": 2
+    "inStock": 2,
+    "color": "Чорний"
   }'
 ```
 
@@ -124,7 +148,8 @@ curl -i -X PUT http://localhost:8080/api/bikes/1 \
     "imageUrl": "/images/bike-trail.svg",
     "images": ["/images/bike-trail.svg", "/images/bike-trail-2.svg"],
     "description": "Оновлена модель із трансмісією 1×12 і новою вилкою.",
-    "inStock": 5
+    "inStock": 5,
+    "color": "Чорний"
   }'
 ```
 
@@ -177,6 +202,8 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/images/bike-trail
 |---|---|---|
 | перелік | `GET /api/bikes` | 200 |
 | фільтр за типом | `GET /api/bikes?type=<закодоване значення>` | 200 |
+| фільтр за кольором (ПЗ 1/3) | `GET /api/bikes?color=<закодоване значення>` | 200 |
+| обидва фільтри разом | `GET /api/bikes?type=...&color=...` | 200 |
 | один велосипед | `GET /api/bikes/{id}` | 200 / 404 |
 | створення | `POST /api/bikes` | 201 |
 | оновлення | `PUT /api/bikes/{id}` | 200 / 404 |

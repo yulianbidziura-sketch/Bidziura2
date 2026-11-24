@@ -25,6 +25,7 @@ public record BikeRequest(
         String imageUrl,
         List<String> images,
         String description,
-        Integer inStock
+        Integer inStock,
+        String color
 ) {
 }

@@ -17,8 +17,12 @@ public interface BikeRepository {
     /** Усі велосипеди зі сховища. */
     List<Bike> findAll();
 
-    /** Велосипеди лише одного типу (фільтр у переліку). */
-    List<Bike> findByType(String type);
+    /**
+     * Велосипеди за критеріями переліку. Критерій зі значенням {@code null}
+     * не застосовується, тому один метод покриває і фільтр за типом, і фільтр
+     * за кольором, і обидва разом (ПЗ 1/3).
+     */
+    List<Bike> search(String type, String color);
 
     /** Велосипед за id або {@link Optional#empty()}, якщо такого немає. */
     Optional<Bike> findById(Long id);

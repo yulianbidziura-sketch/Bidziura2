@@ -19,6 +19,9 @@ import java.util.List;
  *
  * Заняття 1/2: у стартових даних заповнено поле {@code type} — на ньому
  * працює фільтр переліку (п'ять велосипедів п'яти різних типів).
+ *
+ * ПЗ 1/3: у кожного велосипеда заповнено ще й {@code color} — п'ять різних
+ * кольорів, щоб було видно роботу другого фільтра (?color=) і обох разом.
  */
 @Component
 public class BikeSeeder implements ApplicationRunner {
@@ -37,7 +40,7 @@ public class BikeSeeder implements ApplicationRunner {
                 List.of("/images/bike-trail.svg", "/images/bike-trail-2.svg"),
                 "Гірський велосипед на алюмінієвій рамі з повітряною вилкою 120 мм "
                         + "і гідравлічними дисковими гальмами. Трансмісія 1×12.",
-                6));
+                6, "Чорний"));
 
         repository.save(new Bike(null, "Road Carbon 2", "Velora", "Шосейний", new BigDecimal("86500.00"),
                 "Карбон", "M", new BigDecimal("28.0"), 22, new BigDecimal("8.20"), 2025,
@@ -45,7 +48,7 @@ public class BikeSeeder implements ApplicationRunner {
                 List.of("/images/bike-road.svg"),
                 "Шосейний велосипед із карбоновою рамою й вилкою, аеродинамічний кермо-винос, "
                         + "обід-карбон 40 мм. Для швидких групових заїздів і стартів.",
-                3));
+                3, "Червоний"));
 
         repository.save(new Bike(null, "City Lite 7", "Urbano", "Міський", new BigDecimal("15400.00"),
                 "Алюміній", "M", new BigDecimal("28.0"), 7, new BigDecimal("14.80"), 2024,
@@ -53,7 +56,7 @@ public class BikeSeeder implements ApplicationRunner {
                 List.of("/images/bike-city.svg"),
                 "Міський велосипед із заниженою рамою, планетарною втулкою на 7 швидкостей, "
                         + "крилами й багажником у комплекті.",
-                11));
+                11, "Бірюзовий"));
 
         repository.save(new Bike(null, "Gravel One", "Gravix", "Гравійний", new BigDecimal("54300.00"),
                 "Хромомолібденова сталь", "L", new BigDecimal("28.0"), 11, new BigDecimal("10.60"), 2025,
@@ -61,7 +64,7 @@ public class BikeSeeder implements ApplicationRunner {
                 List.of("/images/bike-gravel.svg"),
                 "Гравійний велосипед на стальній рамі з кріпленнями під багажник і флягу, "
                         + "покришки 45 мм, кермо з розкриттям 16°.",
-                4));
+                4, "Пісочний"));
 
         repository.save(new Bike(null, "Junior 24", "Kidrex", "Підлітковий", new BigDecimal("9800.00"),
                 "Алюміній", "S", new BigDecimal("24.0"), 8, new BigDecimal("11.20"), 2024,
@@ -69,6 +72,6 @@ public class BikeSeeder implements ApplicationRunner {
                 List.of("/images/bike-junior.svg"),
                 "Підлітковий велосипед на колесах 24 дюйми, полегшена рама, "
                         + "механічні дискові гальма з короткими ручками під дитячу долоню.",
-                9));
+                9, "Синій"));
     }
 }

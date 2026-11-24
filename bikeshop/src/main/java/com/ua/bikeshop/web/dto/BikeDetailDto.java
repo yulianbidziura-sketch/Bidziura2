@@ -27,6 +27,9 @@ public record BikeDetailDto(
         String imageUrl,
         List<String> images,
         String description,
-        Integer inStock
+        Integer inStock,
+
+        /** Колір рами — додано на ПЗ 1/3 разом із фільтром ?color=. */
+        String color
 ) {
 }

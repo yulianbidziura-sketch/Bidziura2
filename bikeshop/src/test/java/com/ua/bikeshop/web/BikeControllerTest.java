@@ -46,7 +46,7 @@ class BikeControllerTest {
 
     @Test
     void list_returnsBikeCards() throws Exception {
-        when(bikeService.findAll(null)).thenReturn(List.of(card()));
+        when(bikeService.findAll(null, null)).thenReturn(List.of(card()));
 
         mockMvc.perform(get("/api/bikes"))
                 .andExpect(status().isOk())
@@ -58,14 +58,38 @@ class BikeControllerTest {
 
     @Test
     void list_passesTypeFilterToService() throws Exception {
-        when(bikeService.findAll("Гірський")).thenReturn(List.of(card()));
+        when(bikeService.findAll("Гірський", null)).thenReturn(List.of(card()));
 
         mockMvc.perform(get("/api/bikes").param("type", "Гірський"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].type").value("Гірський"));
 
-        verify(bikeService).findAll("Гірський");
+        verify(bikeService).findAll("Гірський", null);
+    }
+
+    @Test
+    void list_passesColorFilterToService() throws Exception {
+        when(bikeService.findAll(null, "Чорний")).thenReturn(List.of(card()));
+
+        mockMvc.perform(get("/api/bikes").param("color", "Чорний"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(bikeService).findAll(null, "Чорний");
+    }
+
+    @Test
+    void list_passesBothFiltersToService() throws Exception {
+        when(bikeService.findAll("Гірський", "Чорний")).thenReturn(List.of(card()));
+
+        mockMvc.perform(get("/api/bikes")
+                        .param("type", "Гірський")
+                        .param("color", "Чорний"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(bikeService).findAll("Гірський", "Чорний");
     }
 
     @Test
@@ -150,13 +174,13 @@ class BikeControllerTest {
                 "Алюміній", "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
                 "/images/bike-trail.svg",
                 List.of("/images/bike-trail.svg", "/images/bike-trail-2.svg"),
-                "Гірський велосипед", 6);
+                "Гірський велосипед", 6, "Чорний");
     }
 
     private BikeRequest request(String model) {
         return new BikeRequest(model, "Ridex", "Гірський", new BigDecimal("41900.00"),
                 "Алюміній", "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
                 "/images/bike-trail.svg", List.of("/images/bike-trail.svg"),
-                "Гірський велосипед", 6);
+                "Гірський велосипед", 6, "Чорний");
     }
 }

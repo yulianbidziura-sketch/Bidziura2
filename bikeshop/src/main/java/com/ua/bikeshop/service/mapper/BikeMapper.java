@@ -47,7 +47,8 @@ public class BikeMapper {
                 bike.getImageUrl(),
                 bike.getImages(),
                 bike.getDescription(),
-                bike.getInStock()
+                bike.getInStock(),
+                bike.getColor()
         );
     }
 
@@ -73,6 +74,7 @@ public class BikeMapper {
         bike.setImages(request.images() == null ? List.of() : request.images());
         bike.setDescription(request.description());
         bike.setInStock(request.inStock());
+        bike.setColor(request.color());
         return bike;
     }
 }

@@ -42,6 +42,7 @@ class BikeMapperTest {
         assertThat(detail.images()).hasSize(2);
         assertThat(detail.inStock()).isEqualTo(6);
         assertThat(detail.type()).isEqualTo("Гірський");
+        assertThat(detail.color()).isEqualTo("Чорний");
     }
 
     @Test
@@ -49,7 +50,7 @@ class BikeMapperTest {
         BikeRequest request = new BikeRequest("Enduro 29", "Ridex", "Гірський",
                 new BigDecimal("52000.00"), "Алюміній", "M", new BigDecimal("29.0"), 12,
                 new BigDecimal("14.10"), 2025, "/images/bike-trail.svg",
-                List.of("/images/bike-trail.svg"), "Новий велосипед", 2);
+                List.of("/images/bike-trail.svg"), "Новий велосипед", 2, "Чорний");
 
         Bike bike = mapper.toDomain(request);
 
@@ -58,6 +59,7 @@ class BikeMapperTest {
         assertThat(bike.getType()).isEqualTo("Гірський");
         assertThat(bike.getPrice()).isEqualByComparingTo("52000.00");
         assertThat(bike.getInStock()).isEqualTo(2);
+        assertThat(bike.getColor()).isEqualTo("Чорний");
     }
 
     @Test
@@ -65,7 +67,7 @@ class BikeMapperTest {
         BikeRequest request = new BikeRequest("Enduro 29", "Ridex", "Гірський",
                 new BigDecimal("52000.00"), "Алюміній", "M", new BigDecimal("29.0"), 12,
                 new BigDecimal("14.10"), 2025, "/images/bike-trail.svg",
-                null, "Новий велосипед", 2);
+                null, "Новий велосипед", 2, "Чорний");
 
         assertThat(mapper.toDomain(request).getImages()).isEmpty();
     }
@@ -75,6 +77,6 @@ class BikeMapperTest {
                 new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
                 "/images/bike-trail.svg",
                 List.of("/images/bike-trail.svg", "/images/bike-trail-2.svg"),
-                "Гірський велосипед", 6);
+                "Гірський велосипед", 6, "Чорний");
     }
 }

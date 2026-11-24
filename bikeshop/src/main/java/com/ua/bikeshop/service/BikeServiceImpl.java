@@ -21,6 +21,9 @@ import java.util.List;
  * Саме тут живуть правила, яких не має знати ні контролер, ні репозиторій:
  * «порожній фільтр означає всі велосипеди», «при створенні id призначає
  * сервер», «оновлення й видалення неіснуючого — це 404».
+ *
+ * ПЗ 1/3: фільтрів стало два (тип і колір), і правило «який фільтр
+ * застосовувати» лишилось тут, а не в контролері.
  */
 @Service
 public class BikeServiceImpl implements BikeService {
@@ -34,13 +37,20 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
-    public List<BikeCardDto> findAll(String type) {
-        List<Bike> bikes = (type == null || type.isBlank())
-                ? repository.findAll()
-                : repository.findByType(type);
+    public List<BikeCardDto> findAll(String type, String color) {
+        String typeFilter = normalize(type);
+        String colorFilter = normalize(color);
+        List<Bike> bikes = (typeFilter == null && colorFilter == null)
+                ? repository.findAll()                       // жодного фільтра — весь перелік
+                : repository.search(typeFilter, colorFilter);
         return bikes.stream()
                 .map(mapper::toCard)
                 .toList();
+    }
+
+    /** Порожній або пробільний параметр трактуємо як «фільтр не задано». */
+    private static String normalize(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     @Override

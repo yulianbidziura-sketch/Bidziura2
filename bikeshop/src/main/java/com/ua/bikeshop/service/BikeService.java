@@ -16,8 +16,11 @@ import java.util.List;
  */
 public interface BikeService {
 
-    /** Перелік велосипедів у вигляді карток; {@code type == null} — усі типи. */
-    List<BikeCardDto> findAll(String type);
+    /**
+     * Перелік велосипедів у вигляді карток. Обидва фільтри необов'язкові:
+     * порожній або відсутній критерій означає «усі» (ПЗ 1/3 — додано колір).
+     */
+    List<BikeCardDto> findAll(String type, String color);
 
     /** Один велосипед з повними деталями; кидає BikeNotFoundException, якщо немає. */
     BikeDetailDto findById(Long id);

@@ -16,6 +16,10 @@ import java.util.List;
  *
  * Заняття 1/2: додано поле {@code type} — за ним працює фільтр у переліку
  * (GET /api/bikes?type=...).
+ *
+ * ПЗ 1/3: додано поле {@code color} — другий фільтр переліку
+ * (GET /api/bikes?color=...). Нове поле дописано в кінець конструктора,
+ * щоб не переписувати порядок аргументів у всіх місцях виклику.
  */
 public class Bike {
 
@@ -61,13 +65,16 @@ public class Bike {
     /** Залишок на складі, шт. */
     private Integer inStock;
 
+    /** Колір рами, напр. «Чорний». Друге поле фільтра (ПЗ 1/3). */
+    private String color;
+
     public Bike() {
     }
 
     public Bike(Long id, String model, String brand, String type, BigDecimal price,
                 String frameMaterial, String frameSize, BigDecimal wheelSize, Integer gears,
                 BigDecimal weightKg, Integer year, String imageUrl, List<String> images,
-                String description, Integer inStock) {
+                String description, Integer inStock, String color) {
         this.id = id;
         this.model = model;
         this.brand = brand;
@@ -83,6 +90,7 @@ public class Bike {
         this.images = images;
         this.description = description;
         this.inStock = inStock;
+        this.color = color;
     }
 
     public Long getId() {
@@ -203,5 +211,13 @@ public class Bike {
 
     public void setInStock(Integer inStock) {
         this.inStock = inStock;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

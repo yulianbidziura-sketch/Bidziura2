@@ -42,29 +42,46 @@ class BikeServiceImplTest {
     void findAll_withoutFilter_takesAllBikes() {
         when(repository.findAll()).thenReturn(List.of(bike(1L, "Trail 29 Pro"), bike(2L, "Road Carbon 2")));
 
-        List<BikeCardDto> cards = service.findAll(null);
+        List<BikeCardDto> cards = service.findAll(null, null);
 
         assertThat(cards).hasSize(2);
         assertThat(cards.get(0).model()).isEqualTo("Trail 29 Pro");
-        verify(repository, never()).findByType(any());
+        verify(repository, never()).search(any(), any());
     }
 
     @Test
     void findAll_withBlankFilter_takesAllBikes() {
         when(repository.findAll()).thenReturn(List.of(bike(1L, "Trail 29 Pro")));
 
-        assertThat(service.findAll("   ")).hasSize(1);
-        verify(repository, never()).findByType(any());
+        assertThat(service.findAll("   ", "  ")).hasSize(1);
+        verify(repository, never()).search(any(), any());
     }
 
     @Test
-    void findAll_withFilter_asksRepositoryByType() {
-        when(repository.findByType("Гірський")).thenReturn(List.of(bike(1L, "Trail 29 Pro")));
+    void findAll_withTypeFilter_asksRepositoryWithTypeOnly() {
+        when(repository.search("Гірський", null)).thenReturn(List.of(bike(1L, "Trail 29 Pro")));
 
-        List<BikeCardDto> cards = service.findAll("Гірський");
+        List<BikeCardDto> cards = service.findAll("Гірський", null);
 
         assertThat(cards).hasSize(1);
         assertThat(cards.get(0).type()).isEqualTo("Гірський");
+    }
+
+    @Test
+    void findAll_withColorFilter_asksRepositoryWithColorOnly() {
+        when(repository.search(null, "Чорний")).thenReturn(List.of(bike(1L, "Trail 29 Pro")));
+
+        assertThat(service.findAll(null, "Чорний")).hasSize(1);
+        verify(repository).search(null, "Чорний");
+        verify(repository, never()).findAll();
+    }
+
+    @Test
+    void findAll_withBothFilters_passesBothAndTrimsThem() {
+        when(repository.search("Гірський", "Чорний")).thenReturn(List.of(bike(1L, "Trail 29 Pro")));
+
+        assertThat(service.findAll("  Гірський ", " Чорний ")).hasSize(1);
+        verify(repository).search("Гірський", "Чорний");
     }
 
     @Test
@@ -144,12 +161,12 @@ class BikeServiceImplTest {
     private Bike bike(Long id, String model) {
         return new Bike(id, model, "Ridex", "Гірський", new BigDecimal("41900.00"), "Алюміній",
                 "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
-                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), "Опис", 6);
+                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), "Опис", 6, "Чорний");
     }
 
     private BikeRequest request(String model) {
         return new BikeRequest(model, "Ridex", "Гірський", new BigDecimal("41900.00"), "Алюміній",
                 "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
-                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), "Опис", 6);
+                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), "Опис", 6, "Чорний");
     }
 }
