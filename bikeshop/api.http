@@ -91,6 +91,10 @@ DELETE http://localhost:8080/api/bikes/2
 ### 9. Видалити його ж удруге → 404
 DELETE http://localhost:8080/api/bikes/2
 
+### 10а. Нечисловий id у шляху → 400 (ПЗ 1/5)
+GET http://localhost:8080/api/bikes/abc
+Accept: application/json
+
 ### 10. Невалідне тіло → 400 з переліком проблем (ГЗ 1/4)
 POST http://localhost:8080/api/bikes
 Content-Type: application/json

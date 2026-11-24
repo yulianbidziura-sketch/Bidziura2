@@ -162,6 +162,35 @@ class BikeApiIntegrationTest {
     }
 
     @Test
+    void list_returnsEmptyArrayWhenFilterMatchesNothing() throws Exception {
+        givenBike("Trail 29 Pro", "Гірський", "Чорний");
+
+        mockMvc.perform(get("/api/bikes").param("type", "Шосейний"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));   // порожня колекція — не помилка
+    }
+
+    @Test
+    void update_returns400AndKeepsStoredBikeUntouched() throws Exception {
+        long id = givenBike("Trail 29 Pro", "Гірський", "Чорний");
+
+        BikeRequest invalid = new BikeRequest("Trail 29 Pro", "Ridex", "   ",
+                new BigDecimal("41900.00"), "Алюміній", "L", new BigDecimal("29.0"), 12,
+                new BigDecimal("13.40"), 2024, "/images/bike-trail.svg",
+                List.of("/images/bike-trail.svg"), "Опис", 6, "Чорний");
+
+        mockMvc.perform(put("/api/bikes/" + id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0]").value("type: тип велосипеда обов'язковий"));
+
+        // невалідний запит не дійшов до сховища — запис лишився колишнім
+        mockMvc.perform(get("/api/bikes/" + id))
+                .andExpect(jsonPath("$.type").value("Гірський"));
+    }
+
+    @Test
     void create_returns400WithDetailsWhenBodyIsInvalid() throws Exception {
         BikeRequest invalid = new BikeRequest("", "Ridex", "Гірський", new BigDecimal("-100.00"),
                 "Алюміній", "M", new BigDecimal("29.0"), 12, new BigDecimal("14.10"), 2025,

@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -21,7 +22,10 @@ import java.util.List;
  * <ul>
  *   <li>{@link BikeNotFoundException} — немає велосипеда з таким id → 404;</li>
  *   <li>{@link MethodArgumentNotValidException} — тіло запиту не пройшло
- *       перевірку {@code @Valid} → 400 з переліком конкретних проблем.</li>
+ *       перевірку {@code @Valid} → 400 з переліком конкретних проблем;</li>
+ *   <li>{@link MethodArgumentTypeMismatchException} — у шляху замість числового
+ *       id прийшов текст → 400 (ПЗ 1/5; без цього обробника Spring віддавав би
+ *       свій типовий формат, і «єдиний формат помилки» був би неповним).</li>
  * </ul>
  */
 @RestControllerAdvice
@@ -36,6 +40,17 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.getReasonPhrase(),
                 ex.getMessage(),
                 List.of());
+    }
+
+    /** У шляху замість числа — текст (напр. /api/bikes/abc): теж 400, той самий формат. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Некоректне значення параметра запиту",
+                List.of(ex.getName() + ": очікувалось число, отримано «" + ex.getValue() + "»"));
     }
 
     /** Невалідне тіло запиту — 400 і перелік полів, які його не пройшли. */

@@ -204,6 +204,16 @@ class BikeControllerTest {
     }
 
     @Test
+    void getOne_returns400WhenIdIsNotANumber() throws Exception {
+        // /api/bikes/abc — @PathVariable не може перетворити текст на Long (ПЗ 1/5)
+        mockMvc.perform(get("/api/bikes/abc"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Некоректне значення параметра запиту"))
+                .andExpect(jsonPath("$.details.length()").value(1));
+    }
+
+    @Test
     void delete_returns204() throws Exception {
         mockMvc.perform(delete("/api/bikes/1"))
                 .andExpect(status().isNoContent());
