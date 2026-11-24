@@ -1,15 +1,13 @@
 package com.ua.bikeshop.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /**
  * Велосипеда з таким id у сховищі немає.
  *
- * ШАР: exception. Анотація {@code @ResponseStatus(NOT_FOUND)} змушує Spring MVC
- * віддати клієнтові 404 — контролеру не потрібно нічого про це знати.
+ * ШАР: exception. До ГЗ 1/4 тут стояла анотація {@code @ResponseStatus(NOT_FOUND)}
+ * — Spring сам віддавав порожній 404. Тепер статус і тіло відповіді формує
+ * глобальний обробник {@code GlobalExceptionHandler}, щоб усі помилки API мали
+ * єдиний формат {@code ErrorResponse}.
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
 public class BikeNotFoundException extends RuntimeException {
 
     public BikeNotFoundException(Long id) {

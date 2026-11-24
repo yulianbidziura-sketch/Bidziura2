@@ -186,6 +186,49 @@ curl -i -X DELETE http://localhost:8080/api/bikes/2
 
 ---
 
+## 6a. Помилки мають єдиний формат (ГЗ 1/4)
+
+Усі помилки API повертаються одним типом `ErrorResponse`
+(`status`, `error`, `message`, `details`) — його формує глобальний обробник
+`GlobalExceptionHandler` (`@RestControllerAdvice`).
+
+**Неіснуючий id → 404:**
+
+```bash
+curl -i http://localhost:8080/api/bikes/999
+```
+
+```json
+{"status":404,"error":"Not Found","message":"Велосипед з id=999 не знайдено","details":[]}
+```
+
+**Невалідне тіло запиту → 400** (порожня модель, від'ємні ціна й залишок):
+
+```bash
+curl -i -X POST http://localhost:8080/api/bikes \
+  -H "Content-Type: application/json" \
+  -d '{"model":"","brand":"Ridex","type":"Гірський","price":-100,"inStock":-1}'
+```
+
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Помилка валідації вхідних даних",
+  "details": [
+    "inStock: залишок не може бути від'ємним",
+    "model: модель обов'язкова",
+    "price: ціна має бути додатною"
+  ]
+}
+```
+
+Правила перевірки стоять на вхідному DTO `BikeRequest` (`@NotBlank` на моделі,
+бренді й типі, `@Positive` на ціні, `@PositiveOrZero` на залишку), а в контролері
+тіло позначено `@Valid`. Невалідний запит **до сервісу не доходить**.
+
+---
+
 ## 7. Статичні зображення
 
 ```bash
@@ -208,6 +251,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/images/bike-trail
 | створення | `POST /api/bikes` | 201 |
 | оновлення | `PUT /api/bikes/{id}` | 200 / 404 |
 | видалення | `DELETE /api/bikes/{id}` | 204 / 404 |
+| невалідне тіло (ГЗ 1/4) | `POST` або `PUT` з порушенням правил | 400 |
 
 > Дані зберігаються в пам'яті: після перезапуску застосунку сховище знову
 > наповнюється п'ятьма стартовими велосипедами з `BikeSeeder`.

@@ -61,4 +61,10 @@ public class InMemoryBikeRepository implements BikeRepository {
     public boolean deleteById(Long id) {
         return storage.remove(id) != null;
     }
+
+    @Override
+    public void deleteAll() {
+        storage.clear();
+        // лічильник навмисно не скидаємо: id не повинні повторно використовуватись
+    }
 }

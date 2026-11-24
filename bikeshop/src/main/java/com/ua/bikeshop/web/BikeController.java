@@ -4,6 +4,7 @@ import com.ua.bikeshop.service.BikeService;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
 import com.ua.bikeshop.web.dto.BikeRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +32,9 @@ import java.util.List;
  *   POST   /api/bikes              → створити велосипед   (201 Created)
  *   PUT    /api/bikes/{id}         → оновити велосипед    (200 OK / 404)
  *   DELETE /api/bikes/{id}         → видалити велосипед   (204 No Content / 404)
+ *
+ * ГЗ 1/4: тіло запиту позначено {@code @Valid} — невалідні дані не доходять до
+ * сервісу, а перетворюються на 400 у {@link GlobalExceptionHandler}.
  */
 @RestController
 @RequestMapping("/api/bikes")
@@ -55,12 +59,12 @@ public class BikeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public BikeDetailDto create(@RequestBody BikeRequest request) {
+    public BikeDetailDto create(@Valid @RequestBody BikeRequest request) {
         return bikeService.create(request);
     }
 
     @PutMapping("/{id}")
-    public BikeDetailDto update(@PathVariable Long id, @RequestBody BikeRequest request) {
+    public BikeDetailDto update(@PathVariable Long id, @Valid @RequestBody BikeRequest request) {
         return bikeService.update(id, request);
     }
 

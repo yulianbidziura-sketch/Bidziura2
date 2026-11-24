@@ -90,3 +90,15 @@ DELETE http://localhost:8080/api/bikes/2
 
 ### 9. Видалити його ж удруге → 404
 DELETE http://localhost:8080/api/bikes/2
+
+### 10. Невалідне тіло → 400 з переліком проблем (ГЗ 1/4)
+POST http://localhost:8080/api/bikes
+Content-Type: application/json
+
+{
+  "model": "",
+  "brand": "Ridex",
+  "type": "Гірський",
+  "price": -100,
+  "inStock": -1
+}

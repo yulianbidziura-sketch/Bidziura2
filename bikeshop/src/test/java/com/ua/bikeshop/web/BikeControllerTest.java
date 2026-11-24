@@ -19,6 +19,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -29,8 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Тест веб-шару: піднімається лише контролер (@WebMvcTest), сервіс підставлено
- * моком. Перевіряємо маршрути, статуси (200/201/204/404) і структуру JSON.
+ * Тест веб-шару (зріз): піднімається лише веб-шар (@WebMvcTest), сервіс
+ * підставлено моком — перевіряється САМЕ контролер: маршрути, статуси
+ * (200/201/204/400/404), структура JSON і фільтри переліку.
+ *
+ * ГЗ 1/4: разом із контролером зріз піднімає і {@code @RestControllerAdvice},
+ * тому тут же перевіряється єдиний формат тіла помилки.
  */
 @WebMvcTest(BikeController.class)
 class BikeControllerTest {
@@ -110,6 +115,56 @@ class BikeControllerTest {
 
         mockMvc.perform(get("/api/bikes/999"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getOne_404hasStructuredBody() throws Exception {
+        // @WebMvcTest сканує @ControllerAdvice, тому тіло помилки формує
+        // GlobalExceptionHandler — перевіряємо саме його формат (ГЗ 1/4)
+        when(bikeService.findById(999L)).thenThrow(new BikeNotFoundException(999L));
+
+        mockMvc.perform(get("/api/bikes/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Велосипед з id=999 не знайдено"))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.details.length()").value(0));
+    }
+
+    @Test
+    void create_returns400WhenModelIsBlankAndPriceIsNegative() throws Exception {
+        BikeRequest invalid = new BikeRequest("  ", "Ridex", "Гірський", new BigDecimal("-1.00"),
+                "Алюміній", "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
+                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"),
+                "Гірський велосипед", 6, "Чорний");
+
+        mockMvc.perform(post("/api/bikes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Помилка валідації вхідних даних"))
+                .andExpect(jsonPath("$.details").isArray())
+                .andExpect(jsonPath("$.details.length()").value(2));
+
+        verify(bikeService, never()).create(any(BikeRequest.class));   // до сервісу не дійшло
+    }
+
+    @Test
+    void update_returns400WhenTypeIsMissing() throws Exception {
+        BikeRequest invalid = new BikeRequest("Trail 29 Pro", "Ridex", null,
+                new BigDecimal("41900.00"), "Алюміній", "L", new BigDecimal("29.0"), 12,
+                new BigDecimal("13.40"), 2024, "/images/bike-trail.svg",
+                List.of("/images/bike-trail.svg"), "Гірський велосипед", 6, "Чорний");
+
+        mockMvc.perform(put("/api/bikes/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.details[0]").value("type: тип велосипеда обов'язковий"));
+
+        verify(bikeService, never()).update(any(Long.class), any(BikeRequest.class));
     }
 
     @Test
