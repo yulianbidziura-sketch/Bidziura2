@@ -317,6 +317,89 @@ class BikeApiIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.images[0]").value("/images/bike-trail.svg"));
     }
 
+    // --- ГЗ 2/4: повнотекстовий пошук ---
+
+    @Test
+    void search_findsByWholeWordAnywhereInText() throws Exception {
+        givenDescribedBike("Trail 29 Pro", "Гірський", "Карбонова рама і дискові гальма");
+        givenDescribedBike("City Lite 7", "Міський", "Планетарна втулка і багажник");
+
+        // слово з опису, а не з назви — звичайний фільтр так не вміє
+        mockMvc.perform(get("/api/bikes/search").param("q", "багажник"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].model").value("City Lite 7"));
+
+        // і слово з типу — у search_vector зведено модель, бренд, тип і опис
+        mockMvc.perform(get("/api/bikes/search").param("q", "Гірський"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].model").value("Trail 29 Pro"));
+    }
+
+    @Test
+    void search_withSeveralWordsNarrowsResult() throws Exception {
+        givenDescribedBike("Trail 29 Pro", "Гірський", "Карбонова рама і дискові гальма");
+        givenDescribedBike("Rock Line 29", "Гірський", "Алюмінієва рама і дискові гальма");
+
+        // одне слово — обидва; два слова з'єднуються логічним «І» — лише один
+        mockMvc.perform(get("/api/bikes/search").param("q", "рама"))
+                .andExpect(jsonPath("$.length()").value(2));
+        mockMvc.perform(get("/api/bikes/search").param("q", "карбонова рама"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].model").value("Trail 29 Pro"));
+    }
+
+    @Test
+    void search_wordOrderDoesNotMatter() throws Exception {
+        givenDescribedBike("Trail 29 Pro", "Гірський", "Карбонова рама і дискові гальма");
+
+        mockMvc.perform(get("/api/bikes/search").param("q", "гальма карбонова"))
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void search_doesNotMatchSubstringUnlikeLike() throws Exception {
+        givenDescribedBike("Trail 29 Pro", "Гірський", "Карбонова рама і дискові гальма");
+
+        // LIKE '%рам%' знайшов би «рама», повнотекстовий пошук працює зі СЛОВАМИ
+        mockMvc.perform(get("/api/bikes/search").param("q", "рам"))
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void search_withEmptyQueryReturnsNothing() throws Exception {
+        givenDescribedBike("Trail 29 Pro", "Гірський", "Карбонова рама і дискові гальма");
+
+        mockMvc.perform(get("/api/bikes/search").param("q", "   "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+        mockMvc.perform(get("/api/bikes/search"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void search_seesBikeCreatedThroughApi() throws Exception {
+        // тригер перераховує search_vector при вставці — інакше нові записи
+        // були б невидимі для пошуку
+        givenDescribedBike("Gravel One", "Гравійний", "Кріплення під багажник і флягу");
+
+        mockMvc.perform(get("/api/bikes/search").param("q", "флягу"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].model").value("Gravel One"));
+    }
+
+    /** Створює велосипед із заданим описом — саме за описом і шукаємо. */
+    private void givenDescribedBike(String model, String type, String description) throws Exception {
+        BikeRequest request = new BikeRequest(model, "Ridex", type, new BigDecimal("41900.00"),
+                "Алюміній", "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
+                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), description, 6, "Чорний");
+        mockMvc.perform(post("/api/bikes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(request)))
+                .andExpect(status().isCreated());
+    }
+
     /** Повертає моделі зі сторінки одним рядком — щоб порівняти дві сторінки між собою. */
     private String contentModels(int page, int size) throws Exception {
         String body = mockMvc.perform(get("/api/bikes/page")

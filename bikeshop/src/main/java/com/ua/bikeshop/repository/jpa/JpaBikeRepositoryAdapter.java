@@ -90,4 +90,9 @@ public class JpaBikeRepositoryAdapter implements BikeRepository {
     public long countByType(String type) {
         return jpa.countByTypeFunction(type);
     }
+
+    @Override
+    public List<Bike> searchFullText(String query) {
+        return jpa.searchFullText(query);
+    }
 }

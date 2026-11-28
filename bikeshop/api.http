@@ -148,3 +148,59 @@ Accept: application/json
 ### 14a. Без типу — увесь каталог
 GET http://localhost:8080/api/bikes/count
 Accept: application/json
+
+### --- ГЗ 2/4: повнотекстовий пошук і відгуки в MongoDB ---
+
+### 15. Повнотекстовий пошук за словом із типу
+GET http://localhost:8080/api/bikes/search?q=Гравійний
+Accept: application/json
+
+### 15a. Пошук за брендом
+GET http://localhost:8080/api/bikes/search?q=Kidrex
+Accept: application/json
+
+### 15b. Пошук за словом з ОПИСУ (звичайний фільтр так не вміє)
+GET http://localhost:8080/api/bikes/search?q=карбоновою
+Accept: application/json
+
+### 15c. Два слова — логічне «І» (порядок не важливий)
+GET http://localhost:8080/api/bikes/search?q=велосипед складається
+Accept: application/json
+
+### 15d. Підрядок НЕ знаходиться: пошук працює зі словами
+GET http://localhost:8080/api/bikes/search?q=рам
+Accept: application/json
+
+### 16. Відгуки про велосипед (MongoDB, найновіші спершу)
+GET http://localhost:8080/api/bikes/1/reviews
+Accept: application/json
+
+### 16a. Додати відгук → 201
+POST http://localhost:8080/api/bikes/1/reviews
+Content-Type: application/json
+
+{
+  "author": "Олег",
+  "rating": 5,
+  "text": "Пройшов 400 км Карпатами — підвіска тримає відмінно."
+}
+
+### 16b. Відгук до неіснуючого велосипеда → 404 (зовнішнього ключа між базами немає)
+POST http://localhost:8080/api/bikes/999/reviews
+Content-Type: application/json
+
+{
+  "author": "Олег",
+  "rating": 5,
+  "text": "Відгук у нікуди"
+}
+
+### 16c. Оцінка поза шкалою 1..5 → 400
+POST http://localhost:8080/api/bikes/1/reviews
+Content-Type: application/json
+
+{
+  "author": "Олег",
+  "rating": 9,
+  "text": "Оцінка поза шкалою"
+}

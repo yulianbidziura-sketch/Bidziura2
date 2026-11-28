@@ -38,6 +38,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- ГЗ 2/4: MongoDB — документна база для відгуків (polyglot persistence) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
         <!--
           ПЗ 2/3 (матеріал ГЗ 2/2): Liquibase веде схему БД міграціями.
           Для Spring Boot 3.4 береться саме org.liquibase:liquibase-core — окремий
@@ -83,6 +89,13 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- ГЗ 2/4: контейнер MongoDB для інтеграційних тестів -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mongodb</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

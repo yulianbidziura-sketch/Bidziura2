@@ -44,6 +44,10 @@ import java.util.List;
  *   GET /api/bikes/discounted/page → те саме сторінками
  *   GET /api/bikes/count?type=...  → скільки таких (рахує функція в базі)
  *
+ * ГЗ 2/4:
+ *   GET /api/bikes/search?q=...    → повнотекстовий пошук за словами
+ *   відгуки — в окремому {@link ReviewController} (вони живуть у MongoDB)
+ *
  * Старий {@code GET /api/bikes} лишено без змін — додавати новий ендпоінт
  * безпечніше, ніж ламати контракт, на який уже міг розраховувати клієнт.
  */
@@ -91,8 +95,18 @@ public class BikeController {
     }
 
     /**
-     * Оголошено ПІСЛЯ літеральних шляхів свідомо: {@code /page}, {@code /count}
-     * і {@code /discounted} мали б інакше шанс потрапити сюди як {@code {id}}.
+     * ГЗ 2/4: повнотекстовий пошук. Оголошено перед {@code /{id}} — сталий сегмент
+     * шляху має йти раніше за змінний.
+     */
+    @GetMapping("/search")
+    public List<BikeCardDto> search(@RequestParam(required = false) String q) {
+        return bikeService.search(q);
+    }
+
+    /**
+     * Оголошено ПІСЛЯ літеральних шляхів свідомо: {@code /page}, {@code /count},
+     * {@code /discounted} і {@code /search} мали б інакше шанс потрапити сюди
+     * як {@code {id}}.
      */
     @GetMapping("/{id}")
     public BikeDetailDto getOne(@PathVariable Long id) {

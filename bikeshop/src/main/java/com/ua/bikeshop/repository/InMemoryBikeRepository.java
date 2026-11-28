@@ -142,6 +142,31 @@ public class InMemoryBikeRepository implements BikeRepository {
     }
 
     @Override
+    public List<Bike> searchFullText(String query) {
+        // Наївна заміна повнотекстового пошуку: розбиваємо запит на слова й шукаємо ті
+        // записи, де знайшлися ВСІ слова (так само, як plainto_tsquery ставить «І»).
+        // Чого тут немає й бути не може без бази — ранжування за релевантністю та
+        // індексу: у пам'яті щоразу перебирається весь перелік.
+        String[] words = query == null ? new String[0] : query.toLowerCase().split("\\s+");
+        if (words.length == 0 || query.isBlank()) {
+            return List.of();
+        }
+        return storage.values().stream()
+                .filter(bike -> {
+                    String document = (bike.getModel() + " " + bike.getBrand() + " "
+                            + bike.getType() + " " + bike.getDescription()).toLowerCase();
+                    for (String word : words) {
+                        if (!word.isBlank() && !document.contains(word)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
+                .sorted(Comparator.comparing(Bike::getId))
+                .toList();
+    }
+
+    @Override
     public long countByType(String type) {
         return storage.values().stream()
                 .filter(bike -> type == null || type.equalsIgnoreCase(bike.getType()))

@@ -18,3 +18,5 @@ databaseChangeLog:
       file: db/changelog/changes/004-view-and-function.yaml     # VIEW + функція (оглядово)
   - include:
       file: db/changelog/changes/005-fill-missing-photos.yaml   # міграція ДАНИХ (UPDATE)
+  - include:
+      file: db/changelog/changes/006-fts-search-vector.yaml     # повнотекстовий пошук (ГЗ 2/4)

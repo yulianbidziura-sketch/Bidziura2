@@ -156,6 +156,21 @@ class InMemoryBikeRepositoryTest {
         assertThat(repository.countByType(null)).isEqualTo(3);
     }
 
+    @Test
+    void searchFullText_requiresAllWordsAndIgnoresCase() {
+        Bike trail = bike(null, "Trail 29 Pro", "Гірський", "Чорний");
+        trail.setDescription("Карбонова рама і дискові гальма");
+        repository.save(trail);
+        Bike city = bike(null, "City Lite 7", "Міський", "Білий");
+        city.setDescription("Планетарна втулка і багажник");
+        repository.save(city);
+
+        assertThat(repository.searchFullText("рама")).hasSize(1);
+        assertThat(repository.searchFullText("карбонова ГАЛЬМА")).hasSize(1);
+        assertThat(repository.searchFullText("карбонова багажник")).isEmpty();
+        assertThat(repository.searchFullText("   ")).isEmpty();
+    }
+
     private Bike priced(String model, String type, String price) {
         Bike bike = bike(null, model, type, "Чорний");
         bike.setPrice(new BigDecimal(price));

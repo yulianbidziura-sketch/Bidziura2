@@ -185,6 +185,33 @@ class BikeRepositoryIntegrationTest extends AbstractIntegrationTest {
         assertThat(repository.findById(saved.getId())).isEmpty();
     }
 
+    @Test
+    void searchFullText_ranksBetterMatchesFirst() {
+        repository.save(described("Trail 29 Pro", "Гірський велосипед з карбоновою рамою"));
+        repository.save(described("City Lite 7", "Міський велосипед"));
+
+        // перший документ містить слово «велосипед» і ще й «карбоновою»; за запитом із
+        // двох слів знайдеться лише він, за одним словом — обидва, і попереду стане
+        // той, у якого ts_rank вищий
+        assertThat(repository.searchFullText("велосипед")).hasSize(2);
+        assertThat(repository.searchFullText("карбоновою велосипед"))
+                .extracting(Bike::getModel)
+                .containsExactly("Trail 29 Pro");
+    }
+
+    @Test
+    void searchFullText_returnsNothingForUnknownWord() {
+        repository.save(described("Trail 29 Pro", "Гірський велосипед"));
+
+        assertThat(repository.searchFullText("акваріум")).isEmpty();
+    }
+
+    private static Bike described(String model, String description) {
+        Bike bike = bike(model, "Гірський", "Чорний", "41900.00");
+        bike.setDescription(description);
+        return bike;
+    }
+
     private static Bike bike(String model, String type, String color, String price) {
         return new Bike(null, model, "Ridex", type, new BigDecimal(price), "Алюміній", "L",
                 new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,

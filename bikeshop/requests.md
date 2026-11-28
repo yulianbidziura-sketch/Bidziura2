@@ -1,9 +1,9 @@
-# Приклади запитів — VeloUA (CRUD + пагінація, заняття 1/2 … ПЗ 2/3)
+# Приклади запитів — VeloUA (CRUD, пагінація, пошук, відгуки; заняття 1/2 … ГЗ 2/4)
 
-Підняти базу й застосунок:
+Підняти бази й застосунок:
 
 ```bash
-docker compose up -d          # PostgreSQL 16
+docker compose up -d          # PostgreSQL 16 (5432) і MongoDB 7 (27017)
 ./mvnw spring-boot:run        # порт 8080; міграції Liquibase виконаються самі
 ```
 
@@ -11,7 +11,8 @@ docker compose up -d          # PostgreSQL 16
 оновлення, видалення. **ПЗ 1/3** додало поле `color` і другий фільтр
 `?color=`, який працює і сам по собі, і разом із `?type=`. **ПЗ 2/3** додало
 сторінковий перелік, SQL-view і збережену функцію (розділи 10–14), а дані
-переїхали з пам'яті в PostgreSQL — тепер вони переживають перезапуск.
+переїхали з пам'яті в PostgreSQL — тепер вони переживають перезапуск. **ГЗ 2/4**
+додало повнотекстовий пошук (розділ 19) і відгуки в MongoDB (розділ 20).
 
 ---
 
@@ -484,3 +485,123 @@ docker exec -it veloua-postgres psql -U veloua -d veloua \
 
 До Модуля 2 сховище було в пам'яті, і після перезапуску лишались тільки 5 велосипедів
 сидера — тепер дані живуть у томі Docker і зникають лише разом із ним (`down -v`).
+
+---
+
+## 19. Повнотекстовий пошук (ГЗ 2/4)
+
+Пошук іде по моделі, бренду, типу й опису — через стовпець `search_vector` з GIN-індексом.
+
+```bash
+curl -G --data-urlencode "q=Гравійний" http://localhost:8080/api/bikes/search
+# → 5 велосипедів: Gravel One, Gravel Carbon X, Backroad 650, Teen Gravel 26, Gravel Adventure
+
+curl -G --data-urlencode "q=Kidrex" http://localhost:8080/api/bikes/search
+# → 4 підліткові велосипеди цього бренду
+
+curl -G --data-urlencode "q=карбоновою" http://localhost:8080/api/bikes/search
+# → Road Carbon 2 (слово з ОПИСУ, а не з назви — фільтр так не вміє)
+```
+
+**Кілька слів з'єднуються логічним «І», порядок не важливий:**
+
+```bash
+curl -G --data-urlencode "q=велосипед складається" http://localhost:8080/api/bikes/search
+curl -G --data-urlencode "q=складається велосипед" http://localhost:8080/api/bikes/search
+# обидва → Urban Folding 20
+```
+
+**Пошук працює зі словами, а не з підрядками** (на відміну від `LIKE '%…%'`):
+
+```bash
+curl -G --data-urlencode "q=рам" http://localhost:8080/api/bikes/search    # → []
+curl -G --data-urlencode "q=рама" http://localhost:8080/api/bikes/search   # → знайде
+```
+
+Порожній запит повертає порожній перелік, а не весь каталог:
+
+```bash
+curl "http://localhost:8080/api/bikes/search"        # → []
+```
+
+Подивитися сам вектор і службові об'єкти в базі:
+
+```bash
+docker exec -it veloua-postgres psql -U veloua -d veloua \
+  -c "SELECT id, model, left(search_vector::text, 60) FROM bikes WHERE id = 1;"
+# → '1':21 '12':22 '120':14 '29':2 'pro':3 'ridex':4 'trail':1 ...
+
+docker exec -it veloua-postgres psql -U veloua -d veloua \
+  -c "SELECT indexname FROM pg_indexes WHERE tablename = 'bikes';"
+# → bikes_pkey, idx_bikes_search_vector
+```
+
+---
+
+## 20. Відгуки у MongoDB (ГЗ 2/4)
+
+Відгуки — під-ресурс велосипеда; зберігаються не в PostgreSQL, а в колекції `reviews`
+бази MongoDB.
+
+**Додати відгук:**
+
+```bash
+curl -i -X POST http://localhost:8080/api/bikes/1/reviews \
+  -H "Content-Type: application/json" \
+  -d '{ "author": "Олег", "rating": 5,
+        "text": "Пройшов 400 км Карпатами — підвіска тримає відмінно." }'
+# → HTTP/1.1 201
+```
+
+**Прочитати відгуки (найновіші спершу):**
+
+```bash
+curl http://localhost:8080/api/bikes/1/reviews
+```
+
+```json
+[
+  { "id": "6b0b26f44f43087273da73ca", "bikeId": 1, "author": "Ірина", "rating": 4,
+    "text": "Легкий, але сідло довелося міняти.", "createdAt": "2026-11-28T19:09:40.683Z" },
+  { "id": "6b0b26f44f43087273da73c9", "bikeId": 1, "author": "Олег", "rating": 5,
+    "text": "Пройшов 400 км Карпатами — підвіска тримає відмінно.", "createdAt": "2026-11-28T19:09:40.601Z" }
+]
+```
+
+`id` — рядковий `ObjectId` із Mongo, `createdAt` ставить сервер.
+
+**404, якщо велосипеда немає** (зовнішнього ключа між базами немає — перевіряє застосунок):
+
+```bash
+curl -i -X POST http://localhost:8080/api/bikes/999/reviews \
+  -H "Content-Type: application/json" \
+  -d '{ "author": "Олег", "rating": 5, "text": "Текст" }'
+# → HTTP/1.1 404, тіло у форматі ErrorResponse
+```
+
+**400, якщо оцінка поза шкалою 1..5:**
+
+```bash
+curl -X POST http://localhost:8080/api/bikes/1/reviews \
+  -H "Content-Type: application/json" \
+  -d '{ "author": "Олег", "rating": 9, "text": "Текст" }'
+```
+
+```json
+{ "status": 400, "error": "Bad Request", "message": "Помилка валідації вхідних даних",
+  "details": ["rating: оцінка не може бути більшою за 5"] }
+```
+
+**Подивитися документи прямо в MongoDB:**
+
+```bash
+docker exec -it veloua-mongo mongosh veloua --quiet \
+  --eval 'db.reviews.find({}, {bikeId:1, author:1, rating:1}).toArray()'
+```
+
+```
+[
+  { _id: ObjectId('6b0b26f44f43087273da73c9'), bikeId: Long('1'), author: 'Олег', rating: 5 },
+  { _id: ObjectId('6b0b26f44f43087273da73ca'), bikeId: Long('1'), author: 'Ірина', rating: 4 }
+]
+```

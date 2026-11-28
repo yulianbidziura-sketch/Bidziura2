@@ -20,16 +20,17 @@ IDEA сама побачить `pom.xml` і підтягне залежност�
 
 ## 2a. Підняти базу даних (ПЗ 2/3)
 
-З ПЗ 2/3 дані зберігаються в PostgreSQL, тому перед запуском треба підняти БД.
-У корені проєкту є `docker-compose.yml`: відкрити його в IDEA і натиснути
-зелений ▶ біля `services` (потрібен запущений Docker Desktop) — або в терміналі:
+З ПЗ 2/3 велосипеди зберігаються в PostgreSQL, а з ГЗ 2/4 відгуки — ще й у MongoDB,
+тому перед запуском треба підняти обидві бази. У корені проєкту є `docker-compose.yml`:
+відкрити його в IDEA і натиснути зелений ▶ біля `services` (потрібен запущений
+Docker Desktop) — або в терміналі:
 
 ```bash
 docker compose up -d
 ```
 
-Перевірити, що контейнер `veloua-postgres` у стані **healthy**: вкладка
-**Services → Docker → Containers**.
+Перевірити, що контейнери `veloua-postgres` і `veloua-mongo` у стані **healthy**:
+вкладка **Services → Docker → Containers**.
 
 Міграції Liquibase виконаються самі під час старту застосунку — у консолі
 з'являться рядки `ChangeSet ... ran successfully` і підсумок `UPDATE SUMMARY`.
@@ -43,8 +44,8 @@ docker compose up -d
 
 - **VeloUA — запуск** — піднімає Spring Boot (клас `BikeshopApplication`) з PostgreSQL;
 - **VeloUA — у пам'яті (без БД)** — той самий застосунок під профілем `inmemory`;
-- **VeloUA — усі тести** — проганяє всі 84 тести (для них теж потрібен Docker:
-  інтеграційні піднімають PostgreSQL через Testcontainers).
+- **VeloUA — усі тести** — проганяє всі 106 тестів (для них теж потрібен Docker:
+  інтеграційні піднімають PostgreSQL і MongoDB через Testcontainers).
 
 Вибрати **VeloUA — запуск** і натиснути ▶ (або `Ctrl+R`).
 
@@ -86,7 +87,14 @@ Started BikeshopApplication in ... seconds
 12. `GET /api/bikes/page?type=Гірський&size=2` — фільтр разом зі сторінкою
     (`totalElements: 6` — рахується по фільтру);
 13. `GET /api/bikes/discounted` — читання SQL-view;
-14. `GET /api/bikes/count?type=Гірський` — підрахунок збереженою функцією.
+14. `GET /api/bikes/count?type=Гірський` — підрахунок збереженою функцією;
+15. `GET /api/bikes/search?q=Гравійний` — повнотекстовий пошук; показати, що він
+    знаходить і за словом з опису (`?q=карбоновою`), а за підрядком (`?q=рам`) —
+    ні, бо це пошук по словах, а не `LIKE` (ГЗ 2/4);
+16. `POST /api/bikes/1/reviews` → **201**, далі `GET /api/bikes/1/reviews` — відгуки
+    з MongoDB, найновіші спершу; `POST /api/bikes/999/reviews` → **404**
+    (зовнішнього ключа між базами немає, існування велосипеда перевіряє застосунок);
+    оцінка `9` → **400**.
 
 Ті самі запити у вигляді `curl` — у `requests.md`.
 
@@ -105,10 +113,12 @@ docker exec -it veloua-postgres psql -U veloua -d veloua \
 ## 5. Показати тести
 
 Запустити конфігурацію **VeloUA — усі тести** (або правою кнопкою на теці
-`src/test/java` → `Run 'All Tests'`). Очікувано: **84 passed**.
+`src/test/java` → `Run 'All Tests'`). Очікувано: **106 passed**.
 
-Перший прогін довший: Testcontainers піднімає PostgreSQL у контейнері (потрібен
-запущений Docker). Тест `BikeApiInMemoryProfileTest` працює й без нього.
+Перший прогін довший: Testcontainers піднімає PostgreSQL і MongoDB у контейнерах
+(потрібен запущений Docker; образ `mongo:7` завантажується один раз). Тести
+`BikeApiInMemoryProfileTest`, `BikeControllerTest` і `ReviewControllerTest` працюють
+і без Docker.
 
 ## 6. Показати, що зроблено на кожному занятті
 
@@ -119,4 +129,4 @@ git checkout main                # повернутись до повного CR
 ```
 
 У IDEA те саме — вкладка `Git` унизу: гілка `main`, теги `gz-1.1`, `gz-1.2`,
-`pz-1.3`, `gz-1.4`, `pz-1.5`, `pz-2.3`.
+`pz-1.3`, `gz-1.4`, `pz-1.5`, `pz-2.3`, `gz-2.4`.

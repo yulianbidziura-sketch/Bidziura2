@@ -1,0 +1,55 @@
+# Зміна 006 — повнотекстовий пошук (FTS) у PostgreSQL (ГЗ 2/4).
+#
+# До цього текстового пошуку в проєкті не було взагалі — лише фільтри за точним збігом
+# типу й кольору. LIKE '%текст%' теж не підійшов би: він шукає підрядок буква-в-букву,
+# не знаходить за окремими словами в будь-якому порядку, не ранжує за релевантністю і
+# не може скористатися індексом (повний скан таблиці).
+#
+# Рішення — стовпець search_vector типу tsvector: попередньо оброблений («нормалізований»)
+# текст велосипеда. У нього зводимо те, що покупець реально набирає в пошуку: модель,
+# бренд, тип і опис.
+#
+# search_vector НЕ оголошений у сутності Bike — це суто колонка бази. Hibernate у режимі
+# validate перевіряє лише ті колонки, що є в @Entity, тож зайвої він не помічає; працюємо
+# з нею нативним SQL.
+databaseChangeLog:
+  - changeSet:
+      id: 006-fts-search-vector
+      author: bidziura
+      changes:
+        # 1) сам стовпець
+        - sql: { sql: "ALTER TABLE bikes ADD COLUMN search_vector tsvector" }
+
+        # 2) заповнити вже наявні 26 велосипедів.
+        #    Конфігурація 'simple' лише розбиває текст на лексеми, без мовного стемінгу:
+        #    для української вбудованої конфігурації в PostgreSQL немає, тому 'english'
+        #    тут був би гірший за 'simple' — він зводив би до основи за правилами чужої мови.
+        - sql:
+            sql: >-
+              UPDATE bikes SET search_vector = to_tsvector('simple',
+                coalesce(model, '') || ' ' || coalesce(brand, '') || ' ' ||
+                coalesce(type, '') || ' ' || coalesce(description, ''))
+
+        # 3) GIN-індекс — саме він робить пошук оператором @@ швидким
+        - sql:
+            sql: "CREATE INDEX idx_bikes_search_vector ON bikes USING GIN (search_vector)"
+
+        # 4) тригер: тримає search_vector в актуальному стані, коли велосипед створюють
+        #    або редагують через API. Без нього нові записи були б невидимі для пошуку.
+        #    splitStatements: false — інакше Liquibase розрізав би тіло функції по ';'
+        - sql:
+            splitStatements: false
+            sql: >-
+              CREATE OR REPLACE FUNCTION bikes_search_vector_update() RETURNS trigger AS $$
+              BEGIN
+                NEW.search_vector := to_tsvector('simple',
+                  coalesce(NEW.model, '') || ' ' || coalesce(NEW.brand, '') || ' ' ||
+                  coalesce(NEW.type, '') || ' ' || coalesce(NEW.description, ''));
+                RETURN NEW;
+              END;
+              $$ LANGUAGE plpgsql;
+        - sql:
+            sql: >-
+              CREATE TRIGGER trg_bikes_search_vector
+              BEFORE INSERT OR UPDATE OF model, brand, type, description ON bikes
+              FOR EACH ROW EXECUTE FUNCTION bikes_search_vector_update()

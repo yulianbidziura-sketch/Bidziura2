@@ -10,6 +10,11 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:veloua}
     password: ${SPRING_DATASOURCE_PASSWORD:veloua}
 
+  # ГЗ 2/4: відгуки зберігаються в MongoDB — окремій документній базі поряд із PostgreSQL.
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/veloua}
+
   # Схему й стартові дані створює Liquibase (міграції у db/changelog).
   # Шлях збігається з типовим — указаний явно, щоб розташування було видно в конфігурації.
   liquibase:

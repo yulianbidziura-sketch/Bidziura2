@@ -55,7 +55,8 @@ class LiquibaseMigrationIntegrationTest {
                 "003-seed-more-bikes",
                 "004-create-discounted-view",
                 "004-create-count-function",
-                "005-fill-missing-photos");
+                "005-fill-missing-photos",
+                "006-fts-search-vector");
     }
 
     @Test
@@ -90,6 +91,32 @@ class LiquibaseMigrationIntegrationTest {
         Long nextId = jdbc.queryForObject(
                 "SELECT nextval(pg_get_serial_sequence('bikes', 'id'))", Long.class);
         assertThat(nextId).isEqualTo(27L);
+    }
+
+    @Test
+    void ftsMigrationCreatedColumnIndexAndTrigger() {
+        // стовпець search_vector існує в базі, але НЕ оголошений у сутності Bike —
+        // Hibernate у режимі validate перевіряє лише свої колонки, тож зайва не заважає
+        Boolean columnExists = jdbc.queryForObject(
+                "SELECT count(*) > 0 FROM information_schema.columns "
+                        + "WHERE table_name = 'bikes' AND column_name = 'search_vector'",
+                Boolean.class);
+        assertThat(columnExists).isTrue();
+
+        Boolean indexExists = jdbc.queryForObject(
+                "SELECT count(*) > 0 FROM pg_indexes WHERE indexname = 'idx_bikes_search_vector'",
+                Boolean.class);
+        assertThat(indexExists).isTrue();
+
+        Boolean triggerExists = jdbc.queryForObject(
+                "SELECT count(*) > 0 FROM pg_trigger WHERE tgname = 'trg_bikes_search_vector'",
+                Boolean.class);
+        assertThat(triggerExists).isTrue();
+
+        // міграція заповнила search_vector усім 26 велосипедам стартового каталогу
+        Long withoutVector = jdbc.queryForObject(
+                "SELECT count(*) FROM bikes WHERE search_vector IS NULL", Long.class);
+        assertThat(withoutVector).isZero();
     }
 
     @Test

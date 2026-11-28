@@ -86,6 +86,21 @@ public interface BikeJpaRepository extends JpaRepository<Bike, Long> {
     Page<Bike> findDiscountedViewPage(Pageable pageable);
 
     /**
+     * ГЗ 2/4: ПОВНОТЕКСТОВИЙ пошук. JPQL операторів FTS не має, тому запит нативний.
+     *
+     * {@code plainto_tsquery} нормалізує введений текст і ставить між словами логічне
+     * «І»; оператор {@code @@} перевіряє, чи документ ({@code search_vector}) відповідає
+     * запиту; {@code ts_rank} рахує релевантність, за якою й сортуємо. Другий критерій
+     * сортування — {@code id}: щоб однаково релевантні записи йшли в сталому порядку.
+     */
+    @Query(value = """
+            SELECT * FROM bikes
+            WHERE search_vector @@ plainto_tsquery('simple', :q)
+            ORDER BY ts_rank(search_vector, plainto_tsquery('simple', :q)) DESC, id
+            """, nativeQuery = true)
+    List<Bike> searchFullText(@Param("q") String q);
+
+    /**
      * Виклик збереженої функції {@code count_bikes_by_type(text)}, створеної
      * міграцією: рахує рядки сама БД, сюди приходить готове число.
      */

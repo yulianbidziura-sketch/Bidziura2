@@ -102,6 +102,15 @@ class BikeControllerTest {
     }
 
     @Test
+    void search_delegatesQueryToService() throws Exception {
+        when(bikeService.search("карбон")).thenReturn(List.of(card()));
+
+        mockMvc.perform(get("/api/bikes/search").param("q", "карбон"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].model").value("Trail 29 Pro"));
+    }
+
+    @Test
     void list_returnsBikeCards() throws Exception {
         when(bikeService.findAll(null, null)).thenReturn(List.of(card()));
 

@@ -3,9 +3,9 @@
 # Запуск:  ./mvnw spring-boot:run -Dspring-boot.run.profiles=inmemory
 #          (або java -jar ... --spring.profiles.active=inmemory)
 #
-# Під цим профілем базa даних не потрібна взагалі, тому автоконфігурацію JPA, джерела
-# даних і Liquibase вимкнено. Активними стають InMemoryBikeRepository і BikeSeeder,
-# а JPA-адаптер — ні. Жоден клас сервісу чи контролера при цьому не змінюється:
+# Під цим профілем жодна база не потрібна, тому автоконфігурацію JPA, джерела даних,
+# Liquibase і MongoDB вимкнено. Активними стають InMemoryBikeRepository і BikeSeeder,
+# а JPA-адаптер і відгуки (вони живуть у Mongo) — ні. Жоден клас сервісу чи контролера при цьому не змінюється:
 # вони залежать від інтерфейсу BikeRepository, а не від реалізації.
 spring:
   autoconfigure:
@@ -14,3 +14,6 @@ spring:
       - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
       - org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoRepositoriesAutoConfiguration

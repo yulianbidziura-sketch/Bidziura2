@@ -75,6 +75,16 @@ public interface BikeRepository {
      */
     long countByType(String type);
 
+    /**
+     * ГЗ 2/4: пошук за текстом — по моделі, бренду, типу й опису.
+     *
+     * У реалізації на PostgreSQL за цим методом стоїть повнотекстовий пошук
+     * (стовпець {@code tsvector} + GIN-індекс), який знаходить за ОКРЕМИМИ
+     * словами в будь-якому порядку й упорядковує результат за релевантністю.
+     * Порожній або пробільний запит повертає порожній перелік.
+     */
+    List<Bike> searchFullText(String query);
+
     /** Межа «знижки»: усе, що дешевше, вважається акційним. */
     java.math.BigDecimal DISCOUNT_PRICE_LIMIT = new java.math.BigDecimal("20000.00");
 }

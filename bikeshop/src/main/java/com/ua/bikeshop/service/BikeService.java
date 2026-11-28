@@ -41,6 +41,12 @@ public interface BikeService {
     /** ПЗ 2/3 (оглядово): скільки велосипедів цього типу — рахує функція в БД. */
     long countByType(String type);
 
+    /**
+     * ГЗ 2/4: повнотекстовий пошук за словами (модель, бренд, тип, опис).
+     * Порожній запит — порожній результат, а не весь каталог.
+     */
+    List<BikeCardDto> search(String query);
+
     /** Один велосипед з повними деталями; кидає BikeNotFoundException, якщо немає. */
     BikeDetailDto findById(Long id);
 

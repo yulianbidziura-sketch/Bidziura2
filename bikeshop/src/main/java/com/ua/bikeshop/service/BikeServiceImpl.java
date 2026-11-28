@@ -110,6 +110,19 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
+    public List<BikeCardDto> search(String query) {
+        String text = normalize(query);
+        if (text == null) {
+            // порожній рядок пошуку — не привід віддавати весь каталог:
+            // для цього є звичайний перелік
+            return List.of();
+        }
+        return repository.searchFullText(text).stream()
+                .map(mapper::toCard)
+                .toList();
+    }
+
+    @Override
     public BikeDetailDto findById(Long id) {
         Bike bike = repository.findById(id)
                 .orElseThrow(() -> new BikeNotFoundException(id));
