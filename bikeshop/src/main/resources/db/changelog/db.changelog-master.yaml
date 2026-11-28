@@ -1,0 +1,20 @@
+# Головний набір змін Liquibase (master changelog) — ПЗ 2/3.
+#
+# Єдина точка входу: Spring Boot читає саме цей файл (шлях задано в application.yaml,
+# хоч він і збігається з типовим) і застосовує підключені зміни по черзі. Кожна зміна
+# лежить окремим файлом — так історія читається, і в git видно, який крок коли додали.
+#
+# Застосовані changeSet Liquibase фіксує в службовій таблиці DATABASECHANGELOG, тому
+# повторний старт не виконує їх удруге; DATABASECHANGELOGLOCK не дає двом процесам
+# мігрувати схему одночасно.
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-bikes.yaml          # таблиці
+  - include:
+      file: db/changelog/changes/002-seed-bikes.yaml            # 20 стартових велосипедів
+  - include:
+      file: db/changelog/changes/003-seed-more-bikes.yaml       # ще 6 (підліткова лінійка)
+  - include:
+      file: db/changelog/changes/004-view-and-function.yaml     # VIEW + функція (оглядово)
+  - include:
+      file: db/changelog/changes/005-fill-missing-photos.yaml   # міграція ДАНИХ (UPDATE)

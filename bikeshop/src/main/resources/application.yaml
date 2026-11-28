@@ -2,5 +2,31 @@ spring:
   application:
     name: bikeshop
 
+  # ПЗ 2/3: дані тепер у PostgreSQL (піднімається через docker-compose.yml).
+  # Значення можна перевизначити змінними середовища — на проді логін і пароль
+  # передають саме так, а не тримають у файлі.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/veloua}
+    username: ${SPRING_DATASOURCE_USERNAME:veloua}
+    password: ${SPRING_DATASOURCE_PASSWORD:veloua}
+
+  # Схему й стартові дані створює Liquibase (міграції у db/changelog).
+  # Шлях збігається з типовим — указаний явно, щоб розташування було видно в конфігурації.
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  jpa:
+    hibernate:
+      # validate: Hibernate НЕ створює й не змінює таблиці, а лише перевіряє, що схема
+      # відповідає сутностям. Єдине джерело схеми — міграції; якщо вони розійдуться з
+      # @Entity, застосунок не стартує (це і є потрібний запобіжник).
+      ddl-auto: validate
+    # OSIV вимкнено: сесія не тримається на весь HTTP-запит. Через це все, що потрібно
+    # віддати клієнту, завантажується в межах транзакції сервісу (див. BikeServiceImpl).
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
 server:
   port: 8080

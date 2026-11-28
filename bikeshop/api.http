@@ -106,3 +106,45 @@ Content-Type: application/json
   "price": -100,
   "inStock": -1
 }
+
+### --- ПЗ 2/3: пагінація, сортування, SQL-view і функція ---
+
+### 10. Сторінка переліку: перша, по 5
+GET http://localhost:8080/api/bikes/page?page=0&size=5
+Accept: application/json
+
+### 10a. Друга сторінка — інші велосипеди, ті самі totalElements/totalPages
+GET http://localhost:8080/api/bikes/page?page=1&size=5
+Accept: application/json
+
+### 11. Сортування сторінки за ціною спаданням
+GET http://localhost:8080/api/bikes/page?size=3&sort=price,desc
+Accept: application/json
+
+### 11a. Сортування за двома полями
+GET http://localhost:8080/api/bikes/page?size=5&sort=type,asc&sort=price,desc
+Accept: application/json
+
+### 12. Пагінація разом із фільтром (totalElements рахується по фільтру)
+GET http://localhost:8080/api/bikes/page?type=Гірський&size=2
+Accept: application/json
+
+### 12a. Обидва фільтри плюс сортування
+GET http://localhost:8080/api/bikes/page?type=Міський&color=Білий&sort=price,asc
+Accept: application/json
+
+### 13. SQL-view: велосипеди зі знижкою (дешевші за 20 000)
+GET http://localhost:8080/api/bikes/discounted
+Accept: application/json
+
+### 13a. Пагінація поверх view
+GET http://localhost:8080/api/bikes/discounted/page?page=0&size=4
+Accept: application/json
+
+### 14. Збережена функція: скільки велосипедів цього типу
+GET http://localhost:8080/api/bikes/count?type=Гірський
+Accept: application/json
+
+### 14a. Без типу — увесь каталог
+GET http://localhost:8080/api/bikes/count
+Accept: application/json

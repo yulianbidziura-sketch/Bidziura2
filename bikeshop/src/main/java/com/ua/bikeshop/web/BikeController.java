@@ -4,7 +4,9 @@ import com.ua.bikeshop.service.BikeService;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
 import com.ua.bikeshop.web.dto.BikeRequest;
+import com.ua.bikeshop.web.dto.PageDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +37,15 @@ import java.util.List;
  *
  * ГЗ 1/4: тіло запиту позначено {@code @Valid} — невалідні дані не доходять до
  * сервісу, а перетворюються на 400 у {@link GlobalExceptionHandler}.
+ *
+ * ПЗ 2/3 — чотири нові ендпоінти читання:
+ *   GET /api/bikes/page            → сторінка карток (?page=&size=&sort=, фільтри ті самі)
+ *   GET /api/bikes/discounted      → велосипеди зі знижкою (SQL-view у базі)
+ *   GET /api/bikes/discounted/page → те саме сторінками
+ *   GET /api/bikes/count?type=...  → скільки таких (рахує функція в базі)
+ *
+ * Старий {@code GET /api/bikes} лишено без змін — додавати новий ендпоінт
+ * безпечніше, ніж ламати контракт, на який уже міг розраховувати клієнт.
  */
 @RestController
 @RequestMapping("/api/bikes")
@@ -52,6 +63,37 @@ public class BikeController {
         return bikeService.findAll(type, color);
     }
 
+    /**
+     * Сторінковий перелік. Контролер лише ОГОЛОШУЄ параметр {@link Pageable} —
+     * збирає його зі {@code ?page=&size=&sort=} сам Spring Data; розбирати
+     * рядок запиту руками не треба.
+     */
+    @GetMapping("/page")
+    public PageDto<BikeCardDto> page(@RequestParam(required = false) String type,
+                                     @RequestParam(required = false) String color,
+                                     Pageable pageable) {
+        return bikeService.findPage(type, color, pageable);
+    }
+
+    @GetMapping("/discounted")
+    public List<BikeCardDto> discounted() {
+        return bikeService.findDiscounted();
+    }
+
+    @GetMapping("/discounted/page")
+    public PageDto<BikeCardDto> discountedPage(Pageable pageable) {
+        return bikeService.findDiscountedPage(pageable);
+    }
+
+    @GetMapping("/count")
+    public long count(@RequestParam(required = false) String type) {
+        return bikeService.countByType(type);
+    }
+
+    /**
+     * Оголошено ПІСЛЯ літеральних шляхів свідомо: {@code /page}, {@code /count}
+     * і {@code /discounted} мали б інакше шанс потрапити сюди як {@code {id}}.
+     */
     @GetMapping("/{id}")
     public BikeDetailDto getOne(@PathVariable Long id) {
         return bikeService.findById(id);

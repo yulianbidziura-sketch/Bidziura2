@@ -6,9 +6,11 @@ import com.ua.bikeshop.service.BikeService;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
 import com.ua.bikeshop.web.dto.BikeRequest;
+import com.ua.bikeshop.web.dto.PageDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.mockito.ArgumentCaptor;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -26,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,6 +42,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * ГЗ 1/4: разом із контролером зріз піднімає і {@code @RestControllerAdvice},
  * тому тут же перевіряється єдиний формат тіла помилки.
+ *
+ * ПЗ 2/3: додано перевірку пагінованого ендпоінта — що Spring сам збирає
+ * {@code Pageable} з параметрів запиту і що назовні йде структура PageDto
+ * (вміст + метадані). Бази тут немає взагалі: предмет перевірки — веб-шар.
  */
 @WebMvcTest(BikeController.class)
 class BikeControllerTest {
@@ -48,6 +58,48 @@ class BikeControllerTest {
 
     @MockitoBean
     private BikeService bikeService;
+
+    @Test
+    void page_returnsPageDtoStructure() throws Exception {
+        when(bikeService.findPage(eq(null), eq(null), any(Pageable.class)))
+                .thenReturn(new PageDto<>(List.of(card()), 0, 5, 12, 3));
+
+        mockMvc.perform(get("/api/bikes/page").param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].model").value("Trail 29 Pro"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.totalElements").value(12))
+                .andExpect(jsonPath("$.totalPages").value(3));
+    }
+
+    @Test
+    void page_passesRequestParametersIntoPageable() throws Exception {
+        ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
+        when(bikeService.findPage(eq("Гірський"), eq(null), captor.capture()))
+                .thenReturn(new PageDto<>(List.of(card()), 1, 5, 12, 3));
+
+        mockMvc.perform(get("/api/bikes/page")
+                        .param("type", "Гірський")
+                        .param("page", "1")
+                        .param("size", "5")
+                        .param("sort", "price,desc"))
+                .andExpect(status().isOk());
+
+        Pageable pageable = captor.getValue();
+        assertThat(pageable.getPageNumber()).isEqualTo(1);
+        assertThat(pageable.getPageSize()).isEqualTo(5);
+        assertThat(pageable.getSort().getOrderFor("price").getDirection().isDescending()).isTrue();
+    }
+
+    @Test
+    void count_returnsPlainNumberFromService() throws Exception {
+        when(bikeService.countByType("Гірський")).thenReturn(7L);
+
+        mockMvc.perform(get("/api/bikes/count").param("type", "Гірський"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("7"));
+    }
 
     @Test
     void list_returnsBikeCards() throws Exception {

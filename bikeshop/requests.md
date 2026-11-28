@@ -1,10 +1,17 @@
-# Приклади запитів — VeloUA (CRUD, заняття 1/2 + ПЗ 1/3)
+# Приклади запитів — VeloUA (CRUD + пагінація, заняття 1/2 … ПЗ 2/3)
 
-Бек має бути запущений: `./mvnw spring-boot:run` (порт 8080, JDK 21).
+Підняти базу й застосунок:
+
+```bash
+docker compose up -d          # PostgreSQL 16
+./mvnw spring-boot:run        # порт 8080; міграції Liquibase виконаються самі
+```
 
 Доступні всі операції CRUD: перелік, фільтри, один велосипед, створення,
 оновлення, видалення. **ПЗ 1/3** додало поле `color` і другий фільтр
-`?color=`, який працює і сам по собі, і разом із `?type=`.
+`?color=`, який працює і сам по собі, і разом із `?type=`. **ПЗ 2/3** додало
+сторінковий перелік, SQL-view і збережену функцію (розділи 10–14), а дані
+переїхали з пам'яті в PostgreSQL — тепер вони переживають перезапуск.
 
 ---
 
@@ -267,3 +274,179 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/images/bike-trail
 
 > Дані зберігаються в пам'яті: після перезапуску застосунку сховище знову
 > наповнюється п'ятьма стартовими велосипедами з `BikeSeeder`.
+
+---
+
+## 10. Сторінковий перелік (ПЗ 2/3)
+
+Параметри: `page` (номер, з 0, типово 0), `size` (розмір, типово 20),
+`sort=поле,asc|desc` (можна передати кілька разів).
+
+**Перша сторінка, по 5 велосипедів:**
+
+```bash
+curl "http://localhost:8080/api/bikes/page?page=0&size=5"
+```
+
+```json
+{
+  "content": [
+    { "id": 1, "model": "Trail 29 Pro", "brand": "Ridex", "type": "Гірський", "price": 41900.00, "imageUrl": "/images/bike-trail.svg" },
+    { "id": 2, "model": "Trail 27 Sport", "brand": "Ridex", "type": "Гірський", "price": 28700.00, "imageUrl": "/images/bike-trail.svg" }
+  ],
+  "page": 0,
+  "size": 5,
+  "totalElements": 26,
+  "totalPages": 6
+}
+```
+
+**Друга сторінка — вже інші велосипеди:**
+
+```bash
+curl "http://localhost:8080/api/bikes/page?page=1&size=5"
+```
+
+Повертає `Hardrock 26`, `Road Carbon 2`, `Road Alu Sport`, `Aero Pro Team`,
+`Endurance 105` — при тих самих `totalElements: 26` і `totalPages: 6`,
+але `"page": 1`.
+
+---
+
+## 11. Сортування сторінки
+
+```bash
+curl "http://localhost:8080/api/bikes/page?size=3&sort=price,desc"
+```
+
+```json
+{ "content": [
+    { "model": "Aero Pro Team", "price": 94900.00 },
+    { "model": "Road Carbon 2", "price": 86500.00 },
+    { "model": "Gravel Carbon X", "price": 78600.00 } ],
+  "page": 0, "size": 3, "totalElements": 26, "totalPages": 9 }
+```
+
+Кілька полів одночасно: `?sort=type,asc&sort=price,desc`.
+
+---
+
+## 12. Пагінація разом із фільтрами
+
+```bash
+curl -G --data-urlencode "type=Гірський" --data-urlencode "size=2" \
+  http://localhost:8080/api/bikes/page
+```
+
+Поверне 2 велосипеди у `content`, але `"totalElements": 6` — підрахунок іде
+**за тим самим фільтром**, а не по всьому каталогу.
+
+Обидва фільтри разом із сортуванням:
+
+```bash
+curl -G --data-urlencode "type=Міський" --data-urlencode "color=Білий" \
+     --data-urlencode "sort=price,asc" http://localhost:8080/api/bikes/page
+```
+
+---
+
+## 13. SQL-view: велосипеди зі знижкою (оглядово)
+
+View `bikes_discounted` створює міграція `004`; акційними вважаються велосипеди
+дешевші за 20 000 грн.
+
+```bash
+curl http://localhost:8080/api/bikes/discounted
+```
+
+Повертає 10 позицій від `Kids Start 16` (5 600) до `Teen Gravel 26` (19 800).
+
+Те саме сторінками (пагінація **поверх view**):
+
+```bash
+curl "http://localhost:8080/api/bikes/discounted/page?page=0&size=4"
+```
+
+```json
+{ "content": [ { "model": "Kids Start 16", "price": 5600.00 }, ... ],
+  "page": 0, "size": 4, "totalElements": 10, "totalPages": 3 }
+```
+
+---
+
+## 14. Збережена функція: підрахунок за типом (оглядово)
+
+Рахує сама база — функція `count_bikes_by_type(text)` з міграції `004`.
+
+```bash
+curl -G --data-urlencode "type=Гірський" http://localhost:8080/api/bikes/count   # → 6
+curl -G --data-urlencode "type=Підлітковий" http://localhost:8080/api/bikes/count # → 4
+curl http://localhost:8080/api/bikes/count                                        # → 26 (без типу — усі)
+```
+
+---
+
+## 15. Перевірка, що схему й дані створив Liquibase
+
+```bash
+docker exec -it veloua-postgres psql -U veloua -d veloua \
+  -c "SELECT id, author, filename, orderexecuted FROM databasechangelog ORDER BY orderexecuted;"
+```
+
+```
+             id             |  author  |                     filename                     | orderexecuted
+----------------------------+----------+--------------------------------------------------+---------------
+ 001-create-bikes           | bidziura | db/changelog/changes/001-create-bikes.yaml        |             1
+ 002-seed-bikes             | bidziura | db/changelog/changes/002-seed-bikes.yaml          |             2
+ 003-seed-more-bikes        | bidziura | db/changelog/changes/003-seed-more-bikes.yaml     |             3
+ 004-create-discounted-view | bidziura | db/changelog/changes/004-view-and-function.yaml   |             4
+ 004-create-count-function  | bidziura | db/changelog/changes/004-view-and-function.yaml   |             5
+ 005-fill-missing-photos    | bidziura | db/changelog/changes/005-fill-missing-photos.yaml |             6
+```
+
+Перелік таблиць (наші дві + дві службові Liquibase):
+
+```bash
+docker exec -it veloua-postgres psql -U veloua -d veloua -c "\dt"
+```
+
+---
+
+## 16. Перевірка «з нуля» і зсув лічильника id
+
+```bash
+docker compose down -v        # видалити том разом із даними
+docker compose up -d          # порожня база
+./mvnw spring-boot:run        # міграції створять схему й 26 велосипедів самі
+curl http://localhost:8080/api/bikes | jq length     # → 26
+```
+
+Перший створений через API велосипед отримує `id = 27`, а не `1` — бо
+seed-міграції зсунули лічильник ідентичності:
+
+```bash
+curl -i -X POST http://localhost:8080/api/bikes \
+  -H "Content-Type: application/json" \
+  -d '{ "model": "Trail 29 Elite", "brand": "Ridex", "type": "Гірський", "price": 47500.00,
+        "frameMaterial": "Карбон", "frameSize": "L", "wheelSize": 29.0, "gears": 12,
+        "weightKg": 12.10, "year": 2026, "imageUrl": "/images/bike-trail.svg",
+        "images": ["/images/bike-trail.svg", "/images/bike-trail-2.svg"],
+        "description": "Новинка сезону 2026.", "inStock": 3, "color": "Сірий" }'
+# → HTTP/1.1 201, у тілі "id": 27
+```
+
+Повторний старт застосунку міграції вдруге не застосовує — у логах
+`Database is up to date, no changesets to execute`.
+
+---
+
+## 17. Той самий API без бази (профіль `inmemory`)
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=inmemory
+curl http://localhost:8080/api/bikes            # → 5 велосипедів BikeSeeder
+curl "http://localhost:8080/api/bikes/page?size=2&sort=price,desc"
+```
+
+Контролер, сервіс, маппер і DTO — ті самі класи; підмінилася лише реалізація
+`BikeRepository`. Дані при цьому знову зникають після перезапуску.

@@ -1,0 +1,509 @@
+# Зміна 002 — стартовий каталог велосипедів (20 позицій).
+#
+# До ПЗ 2/3 каталог наповнював BikeSeeder у коді. Тепер стартові дані теж під версіями:
+# їх вставляє міграція, тому на будь-якій чистій базі каталог з'являється сам, без
+# запуску якогось компонента застосунку.
+#
+# id задано явно (1..20) — інакше рядкам галереї (bike_images) не було б на що
+# посилатися через bike_id. У PostgreSQL id — стовпець-ідентичність, тому явні значення
+# дозволені, АЛЕ внутрішній лічильник від них не зсувається: наприкінці changeSet його
+# пересуваємо вручну, інакше перший велосипед, доданий через POST, отримав би id=1 і
+# впав на порушенні унікальності первинного ключа.
+#
+# 20 записів узято не випадково: розмір сторінки за замовчуванням — 20, тож із цією
+# міграцією і наступною (ще 6) пагінація дає кілька сторінок навіть на типових розмірах.
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-bikes
+      author: bidziura
+      changes:
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 1}
+              - column: {name: model, value: "Trail 29 Pro"}
+              - column: {name: brand, value: "Ridex"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 41900.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 29.0}
+              - column: {name: gears, valueNumeric: 12}
+              - column: {name: weight_kg, valueNumeric: 13.40}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 6}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Чорний"}
+              - column: {name: description, value: "Гірський велосипед на алюмінієвій рамі з повітряною вилкою 120 мм і гідравлічними дисковими гальмами. Трансмісія 1×12."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 1}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 1}
+              - column: {name: image_url, value: "/images/bike-trail-2.svg"}
+              - column: {name: position, valueNumeric: 1}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 2}
+              - column: {name: model, value: "Trail 27 Sport"}
+              - column: {name: brand, value: "Ridex"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 28700.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 27.5}
+              - column: {name: gears, valueNumeric: 10}
+              - column: {name: weight_kg, valueNumeric: 14.10}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 8}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Сірий"}
+              - column: {name: description, value: "Початковий гірський велосипед для лісових стежок: вилка 100 мм, гідравліка, колеса 27,5 дюйма."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 2}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 3}
+              - column: {name: model, value: "Rock Line 29"}
+              - column: {name: brand, value: "Karpaty"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 35200.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 29.0}
+              - column: {name: gears, valueNumeric: 12}
+              - column: {name: weight_kg, valueNumeric: 13.90}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 5}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Зелений"}
+              - column: {name: description, value: "Універсальний хардтейл для карпатських маршрутів з посиленим ободом і покришками 2,4 дюйма."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 3}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 4}
+              - column: {name: model, value: "Summit XC 29"}
+              - column: {name: brand, value: "Velora"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 64800.00}
+              - column: {name: frame_material, value: "Карбон"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 29.0}
+              - column: {name: gears, valueNumeric: 12}
+              - column: {name: weight_kg, valueNumeric: 11.20}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 2}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Чорний"}
+              - column: {name: description, value: "Кроскантрійний велосипед на карбоновій рамі вагою 11,2 кг для марафонів і стартів."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 4}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 5}
+              - column: {name: model, value: "Trail Lady 27"}
+              - column: {name: brand, value: "Ridex"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 26400.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 27.5}
+              - column: {name: gears, valueNumeric: 9}
+              - column: {name: weight_kg, valueNumeric: 13.70}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 7}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Бірюзовий"}
+              - column: {name: description, value: "Гірський велосипед із заниженою верхньою трубою, вузьким кермом і коротшими шатунами."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 5}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 6}
+              - column: {name: model, value: "Hardrock 26"}
+              - column: {name: brand, value: "Karpaty"}
+              - column: {name: type, value: "Гірський"}
+              - column: {name: price, valueNumeric: 18900.00}
+              - column: {name: frame_material, value: "Сталь"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 26.0}
+              - column: {name: gears, valueNumeric: 8}
+              - column: {name: weight_kg, valueNumeric: 15.60}
+              - column: {name: model_year, valueNumeric: 2023}
+              - column: {name: in_stock, valueNumeric: 10}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: color, value: "Синій"}
+              - column: {name: description, value: "Простий сталевий хардтейл для міста й ґрунтових доріг, механічні дискові гальма."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 6}
+              - column: {name: image_url, value: "/images/bike-trail.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 7}
+              - column: {name: model, value: "Road Carbon 2"}
+              - column: {name: brand, value: "Velora"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 86500.00}
+              - column: {name: frame_material, value: "Карбон"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 22}
+              - column: {name: weight_kg, valueNumeric: 8.20}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 3}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: color, value: "Червоний"}
+              - column: {name: description, value: "Шосейний велосипед із карбоновою рамою й вилкою, аеродинамічний кермо-винос, обід-карбон 40 мм."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 7}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 8}
+              - column: {name: model, value: "Road Alu Sport"}
+              - column: {name: brand, value: "Velora"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 39800.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 18}
+              - column: {name: weight_kg, valueNumeric: 9.70}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 4}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: color, value: "Білий"}
+              - column: {name: description, value: "Алюмінієвий шосейник для перших стартів: карбонова вилка, трансмісія на 18 швидкостей."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 8}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 9}
+              - column: {name: model, value: "Aero Pro Team"}
+              - column: {name: brand, value: "Velora"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 94900.00}
+              - column: {name: frame_material, value: "Карбон"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 24}
+              - column: {name: weight_kg, valueNumeric: 7.80}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 1}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: color, value: "Чорний"}
+              - column: {name: description, value: "Аеродинамічний шосейний велосипед вагою 7,8 кг з інтегрованим кермом і електронною трансмісією."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 9}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 10}
+              - column: {name: model, value: "Endurance 105"}
+              - column: {name: brand, value: "Dnipro Bikes"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 52300.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 22}
+              - column: {name: weight_kg, valueNumeric: 9.10}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 3}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: color, value: "Синій"}
+              - column: {name: description, value: "Шосейний велосипед довгих дистанцій: подовжена колісна база, покришки 30 мм, кріплення під багажник."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 10}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 11}
+              - column: {name: model, value: "Track One"}
+              - column: {name: brand, value: "Dnipro Bikes"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 24600.00}
+              - column: {name: frame_material, value: "Сталь"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 1}
+              - column: {name: weight_kg, valueNumeric: 9.40}
+              - column: {name: model_year, valueNumeric: 2023}
+              - column: {name: in_stock, valueNumeric: 2}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: color, value: "Білий"}
+              - column: {name: description, value: "Односкоростний трековий велосипед зі сталевою рамою і фіксованою втулкою."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 11}
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 12}
+              - column: {name: model, value: "City Lite 7"}
+              - column: {name: brand, value: "Urbano"}
+              - column: {name: type, value: "Міський"}
+              - column: {name: price, valueNumeric: 15400.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 7}
+              - column: {name: weight_kg, valueNumeric: 14.80}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 11}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: color, value: "Бірюзовий"}
+              - column: {name: description, value: "Міський велосипед із заниженою рамою, планетарною втулкою на 7 швидкостей, крилами й багажником."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 12}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 13}
+              - column: {name: model, value: "City Comfort 3"}
+              - column: {name: brand, value: "Urbano"}
+              - column: {name: type, value: "Міський"}
+              - column: {name: price, valueNumeric: 12700.00}
+              - column: {name: frame_material, value: "Сталь"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 3}
+              - column: {name: weight_kg, valueNumeric: 16.20}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 14}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: color, value: "Сірий"}
+              - column: {name: description, value: "Комфортний міський велосипед із прямою посадкою, широким сідлом і повним комплектом крил."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 13}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 14}
+              - column: {name: model, value: "Urban Folding 20"}
+              - column: {name: brand, value: "Urbano"}
+              - column: {name: type, value: "Міський"}
+              - column: {name: price, valueNumeric: 17900.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 20.0}
+              - column: {name: gears, valueNumeric: 7}
+              - column: {name: weight_kg, valueNumeric: 12.90}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 6}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: color, value: "Чорний"}
+              - column: {name: description, value: "Складаний велосипед на колесах 20 дюймів: складається за 15 секунд, їде в багажник і метро."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 14}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 15}
+              - column: {name: model, value: "Promenade 26"}
+              - column: {name: brand, value: "Karpaty"}
+              - column: {name: type, value: "Міський"}
+              - column: {name: price, valueNumeric: 11200.00}
+              - column: {name: frame_material, value: "Сталь"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 26.0}
+              - column: {name: gears, valueNumeric: 1}
+              - column: {name: weight_kg, valueNumeric: 15.80}
+              - column: {name: model_year, valueNumeric: 2023}
+              - column: {name: in_stock, valueNumeric: 9}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: color, value: "Білий"}
+              - column: {name: description, value: "Прогулянковий односкоростний велосипед із ножним гальмом і кошиком на кермі."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 15}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 16}
+              - column: {name: model, value: "Cargo City 24"}
+              - column: {name: brand, value: "Urbano"}
+              - column: {name: type, value: "Міський"}
+              - column: {name: price, valueNumeric: 32400.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 24.0}
+              - column: {name: gears, valueNumeric: 8}
+              - column: {name: weight_kg, valueNumeric: 21.50}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 2}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: color, value: "Зелений"}
+              - column: {name: description, value: "Вантажний міський велосипед із подовженою рамою і платформою на 60 кг корисного навантаження."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 16}
+              - column: {name: image_url, value: "/images/bike-city.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 17}
+              - column: {name: model, value: "Gravel One"}
+              - column: {name: brand, value: "Gravix"}
+              - column: {name: type, value: "Гравійний"}
+              - column: {name: price, valueNumeric: 54300.00}
+              - column: {name: frame_material, value: "Хромомолібденова сталь"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 11}
+              - column: {name: weight_kg, valueNumeric: 10.60}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 4}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: color, value: "Пісочний"}
+              - column: {name: description, value: "Гравійний велосипед на стальній рамі з кріпленнями під багажник і флягу, покришки 45 мм."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 17}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 18}
+              - column: {name: model, value: "Gravel Adventure"}
+              - column: {name: brand, value: "Gravix"}
+              - column: {name: type, value: "Гравійний"}
+              - column: {name: price, valueNumeric: 47200.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "M"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 11}
+              - column: {name: weight_kg, valueNumeric: 10.90}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 5}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: color, value: "Зелений"}
+              - column: {name: description, value: "Гравійник для багатоденних подорожей: вісім кріплень під сумки, широкий діапазон передач."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 18}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 19}
+              - column: {name: model, value: "Gravel Carbon X"}
+              - column: {name: brand, value: "Gravix"}
+              - column: {name: type, value: "Гравійний"}
+              - column: {name: price, valueNumeric: 78600.00}
+              - column: {name: frame_material, value: "Карбон"}
+              - column: {name: frame_size, value: "L"}
+              - column: {name: wheel_size, valueNumeric: 28.0}
+              - column: {name: gears, valueNumeric: 12}
+              - column: {name: weight_kg, valueNumeric: 8.90}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 2}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: color, value: "Чорний"}
+              - column: {name: description, value: "Карбоновий гравійний велосипед для швидких заїздів по змішаному покриттю."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 19}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: position, valueNumeric: 0}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 20}
+              - column: {name: model, value: "Backroad 650"}
+              - column: {name: brand, value: "Dnipro Bikes"}
+              - column: {name: type, value: "Гравійний"}
+              - column: {name: price, valueNumeric: 43100.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 27.5}
+              - column: {name: gears, valueNumeric: 10}
+              - column: {name: weight_kg, valueNumeric: 10.40}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 3}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: color, value: "Червоний"}
+              - column: {name: description, value: "Гравійний велосипед на колесах 27,5 дюйма з покришками 50 мм для ґрунтів і лісових доріг."}
+        - insert:
+            tableName: bike_images
+            columns:
+              - column: {name: bike_id, valueNumeric: 20}
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+              - column: {name: position, valueNumeric: 0}
+
+        # Наступний згенерований id має йти після вставлених (останній — 20).
+        - sql:
+            sql: "ALTER TABLE bikes ALTER COLUMN id RESTART WITH 21"

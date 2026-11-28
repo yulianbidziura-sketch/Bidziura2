@@ -14,6 +14,13 @@ import java.util.List;
  * ШАР: service/mapper. Винесено окремо від сервісу (SRP): сервіс відповідає за
  * логіку, маппер — тільки за перетворення форматів. Коли мапінгів побільшає,
  * усі вони будуть в одному місці.
+ *
+ * ПЗ 2/3: {@code toDetail} тепер МАТЕРІАЛІЗУЄ галерею фото — копіює її у
+ * звичайний список. Після переходу на JPA {@code bike.getImages()} — це ліниве
+ * проксі: якби воно потрапило в DTO як є, читання з БД сталося б пізніше, під
+ * час серіалізації у JSON, коли транзакція вже закрита (OSIV вимкнено), і ми
+ * отримали б LazyInitializationException. Копіювання перебирає елементи ще в
+ * транзакції — тобто змушує проксі сходити в базу вчасно.
  */
 @Component
 public class BikeMapper {
@@ -45,7 +52,7 @@ public class BikeMapper {
                 bike.getWeightKg(),
                 bike.getYear(),
                 bike.getImageUrl(),
-                bike.getImages(),
+                bike.getImages() == null ? List.of() : List.copyOf(bike.getImages()),
                 bike.getDescription(),
                 bike.getInStock(),
                 bike.getColor()

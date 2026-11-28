@@ -1,0 +1,40 @@
+# Зміна 004 (ОГЛЯДОВО) — SQL-view і збережена функція.
+#
+# Показує, що міграцією створюють не лише таблиці. Різниця з усім попереднім матеріалом
+# у тому, що тут обчислення виконує САМА база, а застосунок лише читає результат
+# нативним запитом (@Query(nativeQuery = true)).
+databaseChangeLog:
+  - changeSet:
+      id: 004-create-discounted-view
+      author: bidziura
+      changes:
+        # VIEW — це запит, якому дали ім'я; читається як звичайна таблиця.
+        # Акційними вважаємо велосипеди, дешевші за 20 000 грн (та сама межа, що в коді:
+        # BikeRepository.DISCOUNT_PRICE_LIMIT).
+        #
+        # Віддаємо ВСІ стовпці bikes, щоб Hibernate міг зібрати з рядків view готові
+        # сутності Bike — тоді для цього ендпоінта не потрібні ні окремий клас, ні
+        # ручне розкладання Object[].
+        - createView:
+            viewName: bikes_discounted
+            replaceIfExists: true
+            selectQuery: "SELECT * FROM bikes WHERE price < 20000"
+
+  - changeSet:
+      id: 004-create-count-function
+      author: bidziura
+      changes:
+        # Збережена функція: іменований код у самій БД, що повертає значення.
+        # createProcedure передає тіло як є — інакше Liquibase розрізав би його по ';'
+        # усередині тіла функції.
+        - createProcedure:
+            dbms: postgresql
+            procedureName: count_bikes_by_type
+            procedureBody: |
+              CREATE OR REPLACE FUNCTION count_bikes_by_type(bike_type text)
+              RETURNS bigint
+              LANGUAGE sql
+              AS $$
+                SELECT count(*) FROM bikes
+                WHERE bike_type IS NULL OR lower(type) = lower(bike_type);
+              $$;

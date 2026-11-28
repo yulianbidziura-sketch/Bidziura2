@@ -7,7 +7,13 @@ import com.ua.bikeshop.service.mapper.BikeMapper;
 import com.ua.bikeshop.web.dto.BikeCardDto;
 import com.ua.bikeshop.web.dto.BikeDetailDto;
 import com.ua.bikeshop.web.dto.BikeRequest;
+import com.ua.bikeshop.web.dto.PageDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,8 +30,17 @@ import java.util.List;
  *
  * ПЗ 1/3: фільтрів стало два (тип і колір), і правило «який фільтр
  * застосовувати» лишилось тут, а не в контролері.
+ *
+ * ПЗ 2/3: клас лишився тим самим при переході з пам'яті на PostgreSQL —
+ * додалися лише нові методи (сторінка, view, функція) і межа транзакції.
+ *
+ * {@code @Transactional(readOnly = true)} на класі відкриває сесію на час
+ * методу: OSIV вимкнено, тому ліниві колекції (галерея фото) мають
+ * завантажитись саме тут, доки сесія жива. Методи, що змінюють дані,
+ * перекривають це звичайним {@code @Transactional} (читання-запис).
  */
 @Service
+@Transactional(readOnly = true)
 public class BikeServiceImpl implements BikeService {
 
     private final BikeRepository repository;
@@ -54,6 +69,47 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
+    public PageDto<BikeCardDto> findPage(String type, String color, Pageable pageable) {
+        Page<Bike> page = repository.search(normalize(type), normalize(color), pageable);
+        // назовні віддаємо власний вузький PageDto, а не Spring-тип Page цілком
+        return new PageDto<>(
+                page.getContent().stream().map(mapper::toCard).toList(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+    @Override
+    public List<BikeCardDto> findDiscounted() {
+        return repository.findDiscounted().stream()
+                .map(mapper::toCard)
+                .toList();
+    }
+
+    @Override
+    public PageDto<BikeCardDto> findDiscountedPage(Pageable pageable) {
+        // Без ORDER BY порядок рядків view недетермінований — на різних сторінках
+        // той самий велосипед міг би з'явитись двічі. Тому якщо клієнт порядку не
+        // задав, упорядковуємо за ціною (акції логічно гортати від найдешевших).
+        Pageable effective = pageable.getSort().isSorted()
+                ? pageable
+                : PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("price"));
+        Page<Bike> page = repository.findDiscounted(effective);
+        return new PageDto<>(
+                page.getContent().stream().map(mapper::toCard).toList(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+    @Override
+    public long countByType(String type) {
+        return repository.countByType(normalize(type));
+    }
+
+    @Override
     public BikeDetailDto findById(Long id) {
         Bike bike = repository.findById(id)
                 .orElseThrow(() -> new BikeNotFoundException(id));
@@ -61,6 +117,7 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
+    @Transactional
     public BikeDetailDto create(BikeRequest request) {
         Bike bike = mapper.toDomain(request);
         bike.setId(null);                    // id призначить репозиторій
@@ -68,6 +125,7 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
+    @Transactional
     public BikeDetailDto update(Long id, BikeRequest request) {
         // спершу переконуємось, що велосипед існує (інакше 404, а не тихе створення)
         repository.findById(id)
@@ -78,6 +136,7 @@ public class BikeServiceImpl implements BikeService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         boolean removed = repository.deleteById(id);
         if (!removed) {

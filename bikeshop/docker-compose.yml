@@ -1,0 +1,28 @@
+# PostgreSQL для VeloUA (ПЗ 2/3).
+#
+# Запуск:    docker compose up -d
+# Зупинка:   docker compose down          — контейнер зникає, том із даними лишається
+# Скидання:  docker compose down -v       — разом із томом; наступний старт створить
+#                                           схему й дані заново міграціями Liquibase
+services:
+  postgres:
+    image: postgres:16-alpine          # alpine — легший образ; саме його радить завдання
+    container_name: veloua-postgres
+    environment:
+      POSTGRES_DB: veloua
+      POSTGRES_USER: veloua
+      POSTGRES_PASSWORD: veloua
+    ports:
+      - "5432:5432"
+    volumes:
+      - veloua-pgdata:/var/lib/postgresql/data   # дані переживають перестворення контейнера
+    healthcheck:
+      # контейнер стає "healthy" лише коли БД справді готова приймати підключення,
+      # інакше застосунок може стартувати швидше за неї й упасти на підключенні
+      test: ["CMD-SHELL", "pg_isready -U veloua -d veloua"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  veloua-pgdata:

@@ -1,5 +1,16 @@
 package com.ua.bikeshop.domain;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -20,49 +31,88 @@ import java.util.List;
  * ПЗ 1/3: додано поле {@code color} — другий фільтр переліку
  * (GET /api/bikes?color=...). Нове поле дописано в кінець конструктора,
  * щоб не переписувати порядок аргументів у всіх місцях виклику.
+ *
+ * ПЗ 2/3: клас став JPA-сутністю — на ньому з'явились анотації відображення
+ * на таблицю {@code bikes}. Це єдина поступка фреймворку в доменному шарі, і
+ * вона свідома: інакше довелося б тримати окремий клас-близнюк лише заради
+ * мапінгу. Набір полів, конструктор і гетери НЕ змінились — тому сервіс,
+ * маппер і контролер лишились такими самими.
+ *
+ * Самої схеми цей клас не створює: таблиці робить Liquibase, а Hibernate у
+ * режимі {@code ddl-auto: validate} лише звіряє її з цими анотаціями.
  */
+@Entity
+@Table(name = "bikes")
 public class Bike {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)   // id видає сама БД (стовпець-ідентичність)
     private Long id;
 
     /** Модель, напр. «Trail 29 Pro». */
+    @Column(nullable = false)
     private String model;
 
     /** Виробник, напр. «Pride». */
+    @Column(nullable = false)
     private String brand;
 
     /** Тип велосипеда: гірський, шосейний, міський, гравійний, підлітковий. Поле фільтра. */
+    @Column(nullable = false)
     private String type;
 
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
 
     /** Матеріал рами: алюміній, карбон, сталь. */
+    @Column(name = "frame_material")
     private String frameMaterial;
 
     /** Розмір рами: S, M, L, XL. */
+    @Column(name = "frame_size", length = 16)
     private String frameSize;
 
     /** Діаметр коліс у дюймах, напр. 29.0. */
+    @Column(name = "wheel_size", precision = 4, scale = 1)
     private BigDecimal wheelSize;
 
     /** Кількість швидкостей трансмісії. */
     private Integer gears;
 
     /** Вага велосипеда в кілограмах. */
+    @Column(name = "weight_kg", precision = 5, scale = 2)
     private BigDecimal weightKg;
 
     /** Рік модельного ряду. */
+    // YEAR — слово зі словника SQL, тому колонку названо model_year
+    @Column(name = "model_year")
     private Integer year;
 
     /** Головне фото (показується на картці в переліку). */
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    /**
+     * Колекція значень: окремої сутності «фото» немає, тому список зберігається
+     * у власній таблиці {@code bike_images}, зв'язаній з {@code bikes} зовнішнім
+     * ключем {@code bike_id}. Стовпець {@code position} тримає ПОРЯДОК фото —
+     * без нього рядки повертались би в довільній послідовності.
+     *
+     * Завантаження ліниве (типово для @ElementCollection), тому список читається
+     * у межах транзакції сервісу — див. BikeServiceImpl і BikeMapper.
+     */
+    @ElementCollection
+    @CollectionTable(name = "bike_images", joinColumns = @JoinColumn(name = "bike_id"))
+    @OrderColumn(name = "position")
+    @Column(name = "image_url", length = 500)
     /** Усі фото (галерея на сторінці велосипеда). */
     private List<String> images;
 
+    @Column(length = 2000)
     private String description;
 
     /** Залишок на складі, шт. */
+    @Column(name = "in_stock")
     private Integer inStock;
 
     /** Колір рами, напр. «Чорний». Друге поле фільтра (ПЗ 1/3). */

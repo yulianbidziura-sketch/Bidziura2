@@ -2,6 +2,7 @@ package com.ua.bikeshop.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ua.bikeshop.AbstractIntegrationTest;
 import com.ua.bikeshop.repository.BikeRepository;
 import com.ua.bikeshop.web.dto.BikeRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,10 +39,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *      справжній id (ніяких припущень «id = 1»);
  *   3) перевіряється лише те, що тест створив сам — ні стартові дані сидера,
  *      ні чужі записи не враховуються.
+ *
+ * ПЗ 2/3: під тестом тепер СПРАВЖНІЙ PostgreSQL із контейнера
+ * ({@link AbstractIntegrationTest}), а схему в ньому створюють ті самі міграції
+ * Liquibase, що й у робочому застосунку. Тобто перевіряється вже не лише код,
+ * а й зв'язка «код + схема + запити».
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-class BikeApiIntegrationTest {
+class BikeApiIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -206,6 +214,129 @@ class BikeApiIntegrationTest {
                 .andExpect(jsonPath("$.details.length()").value(2))
                 .andExpect(jsonPath("$.details[0]").value("model: модель обов'язкова"))
                 .andExpect(jsonPath("$.details[1]").value("price: ціна має бути додатною"));
+    }
+
+    // --- ПЗ 2/3: пагінація, сортування, SQL-view і функція крізь усі шари ---
+
+    @Test
+    void page_returnsSliceWithMetadata() throws Exception {
+        for (int i = 1; i <= 12; i++) {
+            givenBike("Модель " + i, "Гірський", "Чорний");
+        }
+
+        mockMvc.perform(get("/api/bikes/page").param("size", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(5))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.totalElements").value(12))
+                .andExpect(jsonPath("$.totalPages").value(3));
+    }
+
+    @Test
+    void page_secondPageContainsDifferentBikes() throws Exception {
+        for (int i = 1; i <= 6; i++) {
+            givenBike("Модель " + i, "Гірський", "Чорний");
+        }
+
+        String first = contentModels(0, 3);
+        String second = contentModels(1, 3);
+
+        assertThat(first).isNotEqualTo(second);
+    }
+
+    @Test
+    void page_sortsByPriceDescending() throws Exception {
+        givenBike("Дешевий", "Гірський", "Чорний", "10000.00");
+        givenBike("Дорогий", "Гірський", "Чорний", "90000.00");
+        givenBike("Середній", "Гірський", "Чорний", "50000.00");
+
+        mockMvc.perform(get("/api/bikes/page").param("sort", "price,desc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].model").value("Дорогий"))
+                .andExpect(jsonPath("$.content[1].model").value("Середній"))
+                .andExpect(jsonPath("$.content[2].model").value("Дешевий"));
+    }
+
+    @Test
+    void page_combinesFilterWithPagination() throws Exception {
+        givenBike("Trail 29 Pro", "Гірський", "Чорний");
+        givenBike("Trail 27 Sport", "Гірський", "Сірий");
+        givenBike("Road Carbon 2", "Шосейний", "Чорний");
+
+        mockMvc.perform(get("/api/bikes/page").param("type", "Гірський").param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2));   // рахує лише відфільтровані
+    }
+
+    @Test
+    void discounted_readsSqlView() throws Exception {
+        givenBike("Junior 24", "Підлітковий", "Синій", "9800.00");
+        givenBike("Road Carbon 2", "Шосейний", "Чорний", "86500.00");
+
+        mockMvc.perform(get("/api/bikes/discounted"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].model").value("Junior 24"));
+    }
+
+    @Test
+    void discountedPage_paginatesOverView() throws Exception {
+        for (int i = 1; i <= 5; i++) {
+            givenBike("Дешевий " + i, "Міський", "Білий", "12000.00");
+        }
+
+        mockMvc.perform(get("/api/bikes/discounted/page").param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(5))
+                .andExpect(jsonPath("$.totalPages").value(3));
+    }
+
+    @Test
+    void count_isCalculatedByStoredFunction() throws Exception {
+        givenBike("Trail 29 Pro", "Гірський", "Чорний");
+        givenBike("Trail 27 Sport", "Гірський", "Сірий");
+        givenBike("Road Carbon 2", "Шосейний", "Чорний");
+
+        mockMvc.perform(get("/api/bikes/count").param("type", "Гірський"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("2"));
+    }
+
+    @Test
+    void detail_stillReturnsGalleryAfterSwitchToDatabase() throws Exception {
+        long id = givenBike("Trail 29 Pro", "Гірський", "Чорний");
+
+        // галерея — лінива колекція; якби її не матеріалізували в транзакції,
+        // тут був би LazyInitializationException замість відповіді
+        mockMvc.perform(get("/api/bikes/" + id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.images.length()").value(1))
+                .andExpect(jsonPath("$.images[0]").value("/images/bike-trail.svg"));
+    }
+
+    /** Повертає моделі зі сторінки одним рядком — щоб порівняти дві сторінки між собою. */
+    private String contentModels(int page, int size) throws Exception {
+        String body = mockMvc.perform(get("/api/bikes/page")
+                        .param("page", String.valueOf(page))
+                        .param("size", String.valueOf(size)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(body).get("content").toString();
+    }
+
+    private long givenBike(String model, String type, String color, String price) throws Exception {
+        BikeRequest request = new BikeRequest(model, "Ridex", type, new BigDecimal(price),
+                "Алюміній", "L", new BigDecimal("29.0"), 12, new BigDecimal("13.40"), 2024,
+                "/images/bike-trail.svg", List.of("/images/bike-trail.svg"), "Опис", 6, color);
+        String body = mockMvc.perform(post("/api/bikes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(request)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return objectMapper.readTree(body).get("id").asLong();
     }
 
     /**

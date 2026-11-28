@@ -1,0 +1,120 @@
+# Зміна 003 — друга партія каталогу: підліткова лінійка і два «тінейджерські» розміри.
+#
+# Окремий changeSet, а НЕ правка 002 — принципово. Liquibase тримає контрольну суму
+# (checksum) кожного застосованого changeSet; якщо змінити вже застосований файл, при
+# наступному старті він побачить розбіжність і зупинить застосунок. Правило просте:
+# застосоване не редагують, додають нове.
+#
+# Ці шість позицій прийшли від постачальника БЕЗ фотографій, тому image_url тут не
+# заповнюється взагалі — фото довантажує окрема міграція даних 005.
+databaseChangeLog:
+  - changeSet:
+      id: 003-seed-more-bikes
+      author: bidziura
+      changes:
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 21}
+              - column: {name: model, value: "Junior 24"}
+              - column: {name: brand, value: "Kidrex"}
+              - column: {name: type, value: "Підлітковий"}
+              - column: {name: price, valueNumeric: 9800.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 24.0}
+              - column: {name: gears, valueNumeric: 8}
+              - column: {name: weight_kg, valueNumeric: 11.20}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 9}
+              - column: {name: color, value: "Синій"}
+              - column: {name: description, value: "Підлітковий велосипед на колесах 24 дюйми, полегшена рама, механічні дискові гальма."}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 22}
+              - column: {name: model, value: "Junior 20 Sport"}
+              - column: {name: brand, value: "Kidrex"}
+              - column: {name: type, value: "Підлітковий"}
+              - column: {name: price, valueNumeric: 7900.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 20.0}
+              - column: {name: gears, valueNumeric: 6}
+              - column: {name: weight_kg, valueNumeric: 9.80}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 12}
+              - column: {name: color, value: "Червоний"}
+              - column: {name: description, value: "Велосипед для дітей 6–9 років: колеса 20 дюймів, захист ланцюга, бічні колеса в комплекті."}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 23}
+              - column: {name: model, value: "Junior 26 Trail"}
+              - column: {name: brand, value: "Kidrex"}
+              - column: {name: type, value: "Підлітковий"}
+              - column: {name: price, valueNumeric: 13400.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 26.0}
+              - column: {name: gears, valueNumeric: 9}
+              - column: {name: weight_kg, valueNumeric: 12.10}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 7}
+              - column: {name: color, value: "Зелений"}
+              - column: {name: description, value: "Підлітковий гірський велосипед на колесах 26 дюймів із амортизаційною вилкою 80 мм."}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 24}
+              - column: {name: model, value: "Kids Start 16"}
+              - column: {name: brand, value: "Kidrex"}
+              - column: {name: type, value: "Підлітковий"}
+              - column: {name: price, valueNumeric: 5600.00}
+              - column: {name: frame_material, value: "Сталь"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 16.0}
+              - column: {name: gears, valueNumeric: 1}
+              - column: {name: weight_kg, valueNumeric: 8.40}
+              - column: {name: model_year, valueNumeric: 2024}
+              - column: {name: in_stock, valueNumeric: 15}
+              - column: {name: color, value: "Бірюзовий"}
+              - column: {name: description, value: "Перший велосипед на колесах 16 дюймів з ножним гальмом і знімними бічними колесами."}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 25}
+              - column: {name: model, value: "Teen Gravel 26"}
+              - column: {name: brand, value: "Gravix"}
+              - column: {name: type, value: "Гравійний"}
+              - column: {name: price, valueNumeric: 19800.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 26.0}
+              - column: {name: gears, valueNumeric: 9}
+              - column: {name: weight_kg, valueNumeric: 11.60}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 4}
+              - column: {name: color, value: "Пісочний"}
+              - column: {name: description, value: "Гравійний велосипед підліткового розміру з кермом-бараном і покришками 40 мм."}
+        - insert:
+            tableName: bikes
+            columns:
+              - column: {name: id, valueNumeric: 26}
+              - column: {name: model, value: "Teen Road 24"}
+              - column: {name: brand, value: "Velora"}
+              - column: {name: type, value: "Шосейний"}
+              - column: {name: price, valueNumeric: 21500.00}
+              - column: {name: frame_material, value: "Алюміній"}
+              - column: {name: frame_size, value: "S"}
+              - column: {name: wheel_size, valueNumeric: 24.0}
+              - column: {name: gears, valueNumeric: 14}
+              - column: {name: weight_kg, valueNumeric: 10.20}
+              - column: {name: model_year, valueNumeric: 2025}
+              - column: {name: in_stock, valueNumeric: 3}
+              - column: {name: color, value: "Білий"}
+              - column: {name: description, value: "Шосейний велосипед для юних гонщиків: колеса 24 дюйми, полегшена рама, 14 швидкостей."}
+
+        # Знову зсуваємо лічильник: тепер останній вставлений id — 26.
+        - sql:
+            sql: "ALTER TABLE bikes ALTER COLUMN id RESTART WITH 27"

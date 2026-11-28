@@ -18,12 +18,33 @@ IDEA сама побачить `pom.xml` і підтягне залежност�
 
 Якщо SDK не вибрано: `Add SDK → Download JDK… → версія 21, Eclipse Temurin`.
 
+## 2a. Підняти базу даних (ПЗ 2/3)
+
+З ПЗ 2/3 дані зберігаються в PostgreSQL, тому перед запуском треба підняти БД.
+У корені проєкту є `docker-compose.yml`: відкрити його в IDEA і натиснути
+зелений ▶ біля `services` (потрібен запущений Docker Desktop) — або в терміналі:
+
+```bash
+docker compose up -d
+```
+
+Перевірити, що контейнер `veloua-postgres` у стані **healthy**: вкладка
+**Services → Docker → Containers**.
+
+Міграції Liquibase виконаються самі під час старту застосунку — у консолі
+з'являться рядки `ChangeSet ... ran successfully` і підсумок `UPDATE SUMMARY`.
+
+> Якщо Docker недоступний, застосунок можна запустити без бази взагалі —
+> конфігурацією **VeloUA — у пам'яті (без БД)** (профіль `inmemory`).
+
 ## 3. Запустити застосунок
 
-У списку конфігурацій угорі праворуч уже є дві готові:
+У списку конфігурацій угорі праворуч уже є три готові:
 
-- **VeloUA — запуск** — піднімає Spring Boot (клас `BikeshopApplication`);
-- **VeloUA — усі тести** — проганяє всі 24 тести.
+- **VeloUA — запуск** — піднімає Spring Boot (клас `BikeshopApplication`) з PostgreSQL;
+- **VeloUA — у пам'яті (без БД)** — той самий застосунок під профілем `inmemory`;
+- **VeloUA — усі тести** — проганяє всі 84 тести (для них теж потрібен Docker:
+  інтеграційні піднімають PostgreSQL через Testcontainers).
 
 Вибрати **VeloUA — запуск** і натиснути ▶ (або `Ctrl+R`).
 
@@ -47,26 +68,47 @@ Started BikeshopApplication in ... seconds
 
 Порядок для демонстрації:
 
-1. `GET /api/bikes` — перелік із п'яти велосипедів (картки: 6 полів);
+1. `GET /api/bikes` — перелік каталогу (26 велосипедів, картки по 6 полів);
 2. `GET /api/bikes?type=Гірський` — фільтр за типом (запит № 2 в `api.http`;
    якщо клієнт не закодує кирилицю — поруч лежить запит № 2a з готовим
    percent-encoding, бо Tomcat не пускає не-ASCII у рядку запиту);
 3. `GET /api/bikes/1` — повні дані одного велосипеда (15 полів разом із галереєю);
 4. `GET /api/bikes/999` — **404**;
-5. `POST /api/bikes` — **201**, у відповіді новий `id = 6`;
+5. `POST /api/bikes` — **201**, у відповіді новий `id = 27` (а не 1 — seed-міграції
+   зсунули лічильник ідентичності);
 6. `PUT /api/bikes/1` — **200**, поля змінилися, `id` той самий;
 7. `PUT /api/bikes/999` — **404**;
 8. `DELETE /api/bikes/2` — **204**;
-9. `DELETE /api/bikes/2` ще раз — **404**.
+9. `DELETE /api/bikes/2` ще раз — **404**;
+10. `GET /api/bikes/page?page=0&size=5` і `?page=1&size=5` — дві різні сторінки
+    з однаковими `totalElements: 26` і `totalPages: 6` (ПЗ 2/3);
+11. `GET /api/bikes/page?size=3&sort=price,desc` — сортування;
+12. `GET /api/bikes/page?type=Гірський&size=2` — фільтр разом зі сторінкою
+    (`totalElements: 6` — рахується по фільтру);
+13. `GET /api/bikes/discounted` — читання SQL-view;
+14. `GET /api/bikes/count?type=Гірський` — підрахунок збереженою функцією.
 
 Ті самі запити у вигляді `curl` — у `requests.md`.
+
+Показати, що схему створив Liquibase (вкладка **Services → Docker** або термінал):
+
+```bash
+docker exec -it veloua-postgres psql -U veloua -d veloua \
+  -c "SELECT id, author, filename FROM databasechangelog ORDER BY orderexecuted;"
+```
+
+Показати, що дані тепер постійні: створити велосипед через `POST`, перезапустити
+застосунок (■ потім ▶) і відкрити його за `id` — запис на місці.
 
 Зображення віддаються як статика: <http://localhost:8080/images/bike-trail.svg>.
 
 ## 5. Показати тести
 
 Запустити конфігурацію **VeloUA — усі тести** (або правою кнопкою на теці
-`src/test/java` → `Run 'All Tests'`). Очікувано: **24 passed**.
+`src/test/java` → `Run 'All Tests'`). Очікувано: **84 passed**.
+
+Перший прогін довший: Testcontainers піднімає PostgreSQL у контейнері (потрібен
+запущений Docker). Тест `BikeApiInMemoryProfileTest` працює й без нього.
 
 ## 6. Показати, що зроблено на кожному занятті
 
@@ -76,4 +118,5 @@ git checkout gz-1.1              # стан після заняття 1/1 (ли�
 git checkout main                # повернутись до повного CRUD
 ```
 
-У IDEA те саме — вкладка `Git` унизу: гілка `main`, теги `gz-1.1` і `gz-1.2`.
+У IDEA те саме — вкладка `Git` унизу: гілка `main`, теги `gz-1.1`, `gz-1.2`,
+`pz-1.3`, `gz-1.4`, `pz-1.5`, `pz-2.3`.

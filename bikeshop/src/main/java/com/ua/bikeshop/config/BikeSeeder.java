@@ -4,6 +4,7 @@ import com.ua.bikeshop.domain.Bike;
 import com.ua.bikeshop.repository.BikeRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -22,8 +23,14 @@ import java.util.List;
  *
  * ПЗ 1/3: у кожного велосипеда заповнено ще й {@code color} — п'ять різних
  * кольорів, щоб було видно роботу другого фільтра (?color=) і обох разом.
+ *
+ * ПЗ 2/3: стартові дані для PostgreSQL створює тепер МІГРАЦІЯ Liquibase —
+ * вони так само під версіями, як і схема, і не залежать від того, чи
+ * запустився якийсь компонент застосунку. Сидер лишається й працює лише під
+ * профілем {@code inmemory}, де бази немає й наповнювати сховище більше нікому.
  */
 @Component
+@Profile("inmemory")
 public class BikeSeeder implements ApplicationRunner {
 
     private final BikeRepository repository;

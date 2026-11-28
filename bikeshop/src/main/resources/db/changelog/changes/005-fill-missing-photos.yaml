@@ -1,0 +1,37 @@
+# Зміна 005 — міграція ДАНИХ (а не схеми).
+#
+# Друга партія каталогу (changeSet 003) прийшла від постачальника без фотографій:
+# у цих шести велосипедів image_url порожній, а галереї немає взагалі. Тут фото
+# проставляються за типом велосипеда — так картки в переліку не лишаються порожніми.
+#
+# Це окремий changeSet, бо правити вже застосований 003 не можна (контрольна сума).
+# І це ще одна відповідь на питання «що вміють міграції»: не лише CREATE/ALTER, а й
+# приведення наявних рядків до ладу.
+databaseChangeLog:
+  - changeSet:
+      id: 005-fill-missing-photos
+      author: bidziura
+      changes:
+        - update:
+            tableName: bikes
+            columns:
+              - column: {name: image_url, value: "/images/bike-junior.svg"}
+            where: "image_url IS NULL AND type = 'Підлітковий'"
+        - update:
+            tableName: bikes
+            columns:
+              - column: {name: image_url, value: "/images/bike-gravel.svg"}
+            where: "image_url IS NULL AND type = 'Гравійний'"
+        - update:
+            tableName: bikes
+            columns:
+              - column: {name: image_url, value: "/images/bike-road.svg"}
+            where: "image_url IS NULL AND type = 'Шосейний'"
+
+        # Тепер у кожного велосипеда є головне фото — створюємо з нього галерею
+        # тим, у кого її ще немає (position 0 — перше й поки єдине фото).
+        - sql:
+            sql: >
+              INSERT INTO bike_images (bike_id, image_url, position)
+              SELECT b.id, b.image_url, 0 FROM bikes b
+              WHERE NOT EXISTS (SELECT 1 FROM bike_images i WHERE i.bike_id = b.id)
