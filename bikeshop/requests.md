@@ -450,3 +450,37 @@ curl "http://localhost:8080/api/bikes/page?size=2&sort=price,desc"
 
 Контролер, сервіс, маппер і DTO — ті самі класи; підмінилася лише реалізація
 `BikeRepository`. Дані при цьому знову зникають після перезапуску.
+
+---
+
+## 18. Доказ персистентності (дані переживають перезапуск)
+
+Створити велосипед, **зупинити й запустити застосунок заново**, прочитати запис:
+
+```bash
+curl -s -X POST http://localhost:8080/api/bikes -H "Content-Type: application/json" \
+  -d '{ "model": "Trail 29 Elite", "brand": "Ridex", "type": "Гірський", "price": 47500.00, ... }'
+# → "id": 27
+
+# ■ зупинити застосунок, ▶ запустити знову
+
+curl http://localhost:8080/api/bikes/27
+# → { "id": 27, "model": "Trail 29 Elite", "price": 47500.00, "color": "Сірий", ... }
+```
+
+Той самий рядок видно й у самій базі:
+
+```bash
+docker exec -it veloua-postgres psql -U veloua -d veloua \
+  -c "SELECT id, model, brand, price, color FROM bikes WHERE id = 27;"
+```
+
+```
+ id |     model      | brand |  price   | color
+----+----------------+-------+----------+-------
+ 27 | Trail 29 Elite | Ridex | 47500.00 | Сірий
+(1 row)
+```
+
+До Модуля 2 сховище було в пам'яті, і після перезапуску лишались тільки 5 велосипедів
+сидера — тепер дані живуть у томі Docker і зникають лише разом із ним (`down -v`).
